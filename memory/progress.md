@@ -1,6 +1,6 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0–S5 已完成；**下一步 S6 离开检测和会议推迟**。
+- 当前状态：设计已定稿（memory/plan.md）；S0–S6 已完成（S6 待手动确认）；**下一步 S7 工作时间段**。
 - 最后更新：2026-10-27
 
 ## S0 HTML 原型
@@ -45,11 +45,12 @@
 - [ ] 待用户手动确认：打字时不抢焦点、首次点击按钮即生效、推迟/立即开始、副屏定位、其他 App 全屏
 
 ## S6 离开检测和会议推迟
-- [ ] IdleMonitor：无操作时长和防息屏断言
-- [ ] SessionMonitor：锁屏/解锁、睡眠/唤醒
-- [ ] MeetingDetector：麦克风（CoreAudio）、摄像头（CoreMediaIO）；接入 BreakController.tick 的 isInMeeting（目前固定为 false）。面板会议状态的副标题目前写的是「麦克风或摄像头正在使用」，可以改为具体是哪个设备（原型 03 ④）
-- [ ] 单元测试：离开判定（无操作阈值、防息屏断言、锁屏和睡眠）。调度器一侧的轮次清零、会议推迟与复查已在 S2 测试
-- [ ] 实测：没有权限弹窗
+- [x] IdleMonitor：用 `CGEventSource.secondsSinceLastEventType`（任意输入）读无操作时长；用 `IOPMCopyAssertionsStatus` 读 `PreventUserIdleDisplaySleep` / `NoDisplaySleepAssertion`。用 `caffeinate -d` 实测读数从 0 变 1，逻辑正确
+- [x] SessionMonitor：`DistributedNotificationCenter` 的 `com.apple.screenIsLocked` / `screenIsUnlocked`，`NSWorkspace` 的 `willSleep` / `didWake`
+- [x] MeetingDetector：麦克风（CoreAudio，输入声道 + `kAudioDevicePropertyDeviceIsRunningSomewhere`）、摄像头（CoreMediaIO，`kCMIODevicePropertyDeviceIsRunningSomewhere`），都不采集音视频、不需要权限
+- [x] 接入 BreakController.tick 的 isInMeeting（由 AppDelegate 接到 MeetingDetector）；面板会议状态副标题按原型保持「麦克风或摄像头正在使用」，不区分具体设备
+- [x] 单元测试：PresenceTracker 8 个（无操作阈值、防息屏断言、锁屏/解锁、睡眠/唤醒、保留更早时间、解锁后从回来时刻重算）；共 77 个测试通过
+- [ ] 待用户手动确认（快速模式）：无操作 20 秒判定离开、再操作即回来；锁屏/解锁；睡眠/唤醒；播放视频不离开；录音时到点推迟并每 5 秒复查；全程没有权限弹窗
 
 ## S7 工作时间段
 - [ ] WorkHours：判断当前是否在工作时间内，计算下次开始时间

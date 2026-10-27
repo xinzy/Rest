@@ -16,6 +16,8 @@ final class BreakController {
     @ObservationIgnored var onBreakStarted: ((ActiveBreak) -> Void)?
     /// 休息结束（完成或跳过）时调用
     @ObservationIgnored var onBreakEnded: ((BreakRecord) -> Void)?
+    /// 麦克风或摄像头是否正在使用，由 AppDelegate 接到 MeetingDetector
+    @ObservationIgnored var isInMeeting: () -> Bool = { false }
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private let logger = Logger(subsystem: "com.shaozeng.xiehuier", category: "BreakController")
 
@@ -78,9 +80,25 @@ final class BreakController {
         }
     }
 
+    /// 判定用户已离开。since 是最后一次输入、锁屏或睡眠的时间
+    func userAway(since: Date) {
+        update { scheduler, now in
+            scheduler.userAway(since: since, now: now)
+            return []
+        }
+    }
+
+    /// 用户回来了；离开不短于长休息时长时，长休息计数清零
+    func userReturned() {
+        update { scheduler, now in
+            scheduler.userReturned(now: now)
+            return []
+        }
+    }
+
     private func tick() {
-        // 会议检测在 S6 接入
-        update { $0.tick(now: $1, isInMeeting: { false }) }
+        let isInMeeting = self.isInMeeting
+        update { $0.tick(now: $1, isInMeeting: isInMeeting) }
     }
 
     private func update(_ change: (inout BreakScheduler, Date) -> [BreakRecord]) {

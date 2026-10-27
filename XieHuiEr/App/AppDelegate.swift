@@ -8,6 +8,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItemController: StatusItemController?
     private var overlayController: OverlayController?
     private var warningHUDController: WarningHUDController?
+    private var meetingDetector: MeetingDetector?
+    private var presenceMonitor: PresenceMonitor?
 
     static func main() {
         let app = NSApplication.shared
@@ -25,6 +27,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let controller = StatusItemController(controller: breakController)
         let overlay = OverlayController(controller: breakController)
         let hud = WarningHUDController(controller: breakController)
+        // 会议检测：到点时麦克风或摄像头被占用就推迟休息
+        let meeting = MeetingDetector()
+        breakController.isInMeeting = { [weak meeting] in meeting?.isInMeeting ?? false }
+        // 离开检测：无操作、锁屏、睡眠
+        let presence = PresenceMonitor(controller: breakController)
         controller.onPanelVisibilityChanged = { [weak hud] in hud?.update() }
         hud.isPanelVisible = { [weak controller] in controller?.isPanelVisible ?? false }
         breakController.onChange = { [weak controller, weak hud] in
@@ -40,10 +47,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             overlay?.hide(after: record.outcome)
         }
         breakController.start()
+        presence.start()
         self.breakController = breakController
         statusItemController = controller
         overlayController = overlay
         warningHUDController = hud
+        meetingDetector = meeting
+        presenceMonitor = presence
         #if DEBUG
         // 调试用：启动参数 -openPanel YES 让面板在启动后直接打开，不点击图标也能检查面板。
         // 刚启动时菜单栏图标还在排版（窗口先在屏幕外，再到屏幕边缘），等 1 秒位置稳定后再打开。
