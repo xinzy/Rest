@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>歇会儿 · UI 原型</title>
+<link rel="stylesheet" href="mockup.css">
+</head>
+<body>
+
+<header class="gallery-head">
+  <h1>歇会儿 · UI 原型</h1>
+  <p>静态高保真原型，用来在写 App 代码之前确认界面。所有数据都是示例：假设今天是 2026 年 10 月 27 日（周二）。</p>
+  <p>画框里的黄色便签是说明文字，不属于界面。截图由 <code>capture.sh</code> 生成，保存在 <code>screenshots/</code>。</p>
+  <nav>
+    <a href="#01-icons">01 菜单栏图标</a>
+    <a href="#02-panel">02 面板</a>
+    <a href="#03-panel-states">03 面板状态</a>
+    <a href="#04-hud">04 预告浮窗</a>
+    <a href="#05-overlay-short">05 遮罩 · 短休息</a>
+    <a href="#06-overlay-long">06 遮罩 · 长休息</a>
+    <a href="#07-settings">07 设置</a>
+    <a href="#08-report-water">08 报表 · 喝水</a>
+    <a href="#09-report-break">09 报表 · 休息</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ 01 菜单栏图标 ============ -->
+<section class="shot" id="01-icons" data-w="1000" data-h="525">
+  <h2>01 · 菜单栏图标与喝水按钮状态</h2>
+  <ul class="notes">
+    <li>18×18pt 模板图，只显示图标、不显示文字，系统会自动适配浅色和深色菜单栏。</li>
+    <li>工作中是进度环：从 12 点方向顺时针，剩余时间越少，弧越短。</li>
+    <li>预告和开会推迟：细圆环加中心圆点；休息中：实心圆；暂停：细圆环加暂停符号；离开和非工作时间：整个圆环变灰。</li>
+    <li>下排是遮罩上「喝了一杯水」按钮的三种状态。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame icons-frame">
+    <div class="if-title">菜单栏图标 · 5 种样式（覆盖 7 种状态）</div>
+    <div class="if-sub">18×18pt 模板图，只显示图标。每张卡片下方的两条是在浅色和深色菜单栏中的实际大小。</div>
+    <div class="icon-cards">
+      <div class="icon-card">
+        <span class="big"><span class="mb" data-state="working" data-f="0.8"></span></span>
+        <div class="name">工作中</div>
+        <div class="desc">进度环，剩余 80%</div>
+        <div class="strip light"><span class="mb" data-state="working" data-f="0.8"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:24</span></div>
+        <div class="strip dark"><span class="mb" data-state="working" data-f="0.8"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:24</span></div>
+      </div>
+      <div class="icon-card">
+        <span class="big"><span class="mb" data-state="working" data-f="0.25"></span></span>
+        <div class="name">工作中</div>
+        <div class="desc">剩余 25%<br>剩余越少，弧越短</div>
+        <div class="strip light"><span class="mb" data-state="working" data-f="0.25"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:41</span></div>
+        <div class="strip dark"><span class="mb" data-state="working" data-f="0.25"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:41</span></div>
+      </div>
+      <div class="icon-card">
+        <span class="big"><span class="mb" data-state="warning"></span></span>
+        <div class="name">预告 / 开会推迟</div>
+        <div class="desc">细圆环 + 中心圆点</div>
+        <div class="strip light"><span class="mb" data-state="warning"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:47</span></div>
+        <div class="strip dark"><span class="mb" data-state="warning"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:47</span></div>
+      </div>
+      <div class="icon-card">
+        <span class="big"><span class="mb" data-state="break"></span></span>
+        <div class="name">休息中</div>
+        <div class="desc">实心圆</div>
+        <div class="strip light"><span class="mb" data-state="break"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:48</span></div>
+        <div class="strip dark"><span class="mb" data-state="break"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">10:48</span></div>
+      </div>
+      <div class="icon-card">
+        <span class="big"><span class="mb" data-state="paused"></span></span>
+        <div class="name">已暂停</div>
+        <div class="desc">细圆环 + 暂停符号</div>
+        <div class="strip light"><span class="mb" data-state="paused"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">11:02</span></div>
+        <div class="strip dark"><span class="mb" data-state="paused"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">11:02</span></div>
+      </div>
+      <div class="icon-card">
+        <span class="big"><span class="mb" data-state="idle"></span></span>
+        <div class="name">离开 / 非工作时间</div>
+        <div class="desc">整个圆环变灰</div>
+        <div class="strip light"><span class="mb" data-state="idle"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">19:30</span></div>
+        <div class="strip dark"><span class="mb" data-state="idle"></span><span class="ic" data-ic="wifi"></span><span class="ic" data-ic="battery"></span><span class="t">19:30</span></div>
+      </div>
+    </div>
+    <div class="water-band">
+      <div class="bt">遮罩上的「喝了一杯水」按钮 · 3 种状态</div>
+      <div class="wb-row">
+        <div class="wb-cell"><button class="water-btn"><span class="ic" data-ic="drop"></span>喝了一杯水</button><div class="cap">默认</div></div>
+        <div class="wb-cell"><button class="water-btn hot"><span class="ic" data-ic="drop"></span>喝了一杯水</button><div class="cap">距上次喝水满 2 小时：高亮</div></div>
+        <div class="wb-cell"><button class="water-btn done"><span class="ic" data-ic="check"></span>已记录 · 今日 4 杯</button><div class="cap">点击后：本次休息内不能再点</div></div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 02 面板 ============ -->
+<section class="shot" id="02-panel" data-w="900" data-h="600">
+  <h2>02 · 面板（点击菜单栏图标）</h2>
+  <ul class="notes">
+    <li>点击菜单栏图标弹出；宽 320pt，没有指向图标的小箭头，样式类似控制中心；点击别处收起。</li>
+    <li>上部：进度环、剩余时间、下一次休息的类型和时长；圆点表示本组轮次，长条代表长休息。</li>
+    <li>「立即休息」的类型与下一轮相同，并算作这一轮；「暂停 ▾」弹出时长菜单（见 03 ①）。</li>
+    <li>喝水：今日杯数 / 目标、进度条、距上次喝水；点「+1 杯」后 5 秒内可撤销（见 03 ⑥）。</li>
+    <li>底部：报表、设置（⌘,）、退出（⌘Q）。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="wallpaper"></div>
+    <div class="menubar" data-app="访达" data-menus="文件 编辑 显示 前往 窗口 帮助" data-state="working" data-f="0.81" data-time="10月27日 周二 10:24" data-pressed></div>
+    <div class="panel anchor" style="top:30px">
+      <div class="platter p-status">
+        <div class="p-head">
+          <span class="ring" data-size="56" data-stroke="5" data-f="0.81" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="eye"></span></span>
+          <div><div class="p-time">24:13</div><div class="p-sub">后开始短休息（30 秒）</div></div>
+        </div>
+        <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="cur"></i><i class="long"></i></span>第 3 / 4 轮 · 下轮长休息</div>
+      </div>
+      <div class="p-tiles">
+        <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+        <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+      </div>
+      <div class="platter p-water">
+        <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>3</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+        <div class="pw-bar"><i style="width:37.5%"></i></div>
+        <div class="pw-meta">距上次喝水 1 小时 20 分</div>
+      </div>
+      <div class="p-menu">
+        <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+        <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+        <div class="sep"></div>
+        <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+      </div>
+    </div>
+    <div class="anno" style="left:24px; bottom:24px">
+      <b>02 · 面板（点击菜单栏图标）</b>
+      <ul>
+        <li>宽 320pt，无小箭头，样式类似控制中心</li>
+        <li>上部：剩余时间、下次休息类型、第 x / N 轮</li>
+        <li>「立即休息」类型同下一轮；「暂停」可选时长</li>
+        <li>喝水：+1 杯，5 秒内可撤销</li>
+        <li>底部：报表、设置、退出</li>
+      </ul>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 03 面板状态 ============ -->
+<section class="shot" id="03-panel-states" data-w="1500" data-h="960">
+  <h2>03 · 面板的各种状态</h2>
+  <ul class="notes">
+    <li>暂停可选 30 分钟 / 1 小时 / 到明天（次日 0 点）/ 直到手动恢复；恢复后开始新的一轮，轮次计数保留。</li>
+    <li>非工作时间：不提醒，显示下次开始的时间；「立即休息」和喝水记录照常可用，「暂停」不可用。</li>
+    <li>开会：麦克风或摄像头被占用时不预告、不弹遮罩，每 60 秒复查一次；结束后先预告，再休息。</li>
+    <li>距上次喝水满 2 小时，喝水行高亮；点「+1 杯」后 5 秒内显示「撤销」。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="wallpaper"></div>
+    <div class="grid4">
+
+      <!-- ① 暂停菜单 -->
+      <div class="cell">
+        <div class="anno"><b>① 暂停菜单</b>点「暂停 ▾」选择时长</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring" data-size="56" data-stroke="5" data-f="0.81" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="eye"></span></span>
+              <div><div class="p-time">24:13</div><div class="p-sub">后开始短休息（30 秒）</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="cur"></i><i class="long"></i></span>第 3 / 4 轮 · 下轮长休息</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile pressed"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>3</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:37.5%"></i></div>
+            <div class="pw-meta">距上次喝水 1 小时 20 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+          <div class="menu" style="left:165px; top:188px">
+            <div class="it">30 分钟<small>到 10:54</small></div>
+            <div class="it hl">1 小时<small>到 11:24</small></div>
+            <div class="it">直到明天<small>次日 0 点</small></div>
+            <div class="sep"></div>
+            <div class="it">直到手动恢复</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ② 已暂停 -->
+      <div class="cell">
+        <div class="anno"><b>② 已暂停</b>到点自动恢复，或手动恢复</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring muted" data-size="56" data-stroke="5" data-f="0" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="pause"></span></span>
+              <div><div class="p-time word">已暂停</div><div class="p-sub">11:24 自动恢复</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="cur"></i><i class="long"></i></span>第 3 / 4 轮 · 恢复后从头计时</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="play"></span></span><div><div class="tile-t">恢复计时</div><div class="tile-s">开始新的一轮</div></div></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>3</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:37.5%"></i></div>
+            <div class="pw-meta">距上次喝水 1 小时 22 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ 非工作时间 -->
+      <div class="cell">
+        <div class="anno"><b>③ 非工作时间</b>不提醒；喝水照常记录</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring muted" data-size="56" data-stroke="5" data-f="0" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="moon"></span></span>
+              <div><div class="p-time word">非工作时间</div><div class="p-sub">周一 09:00 开始提醒</div></div>
+            </div>
+            <div class="p-rounds">工作时间：周一至周五 09:00–19:00</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile disabled"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">非工作时间不可用</div></div></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>5</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:62.5%"></i></div>
+            <div class="pw-meta">距上次喝水 45 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ④ 开会 -->
+      <div class="cell">
+        <div class="anno"><b>④ 开会自动推迟</b>每 60 秒复查一次</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring warn" data-size="56" data-stroke="5" data-f="1" data-color="var(--orange)" data-track="var(--fill-strong)"><span class="ic" data-ic="mic"></span></span>
+              <div><div class="p-time word">正在开会</div><div class="p-sub">检测到麦克风正在使用</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="cur"></i><i class="long"></i></span>会议结束后先预告，再休息</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>3</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:37.5%"></i></div>
+            <div class="pw-meta">距上次喝水 1 小时 46 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑤ 喝水高亮 -->
+      <div class="cell">
+        <div class="anno"><b>⑤ 距上次喝水满 2 小时</b>喝水行高亮</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring" data-size="56" data-stroke="5" data-f="0.28" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="eye"></span></span>
+              <div><div class="p-time">08:31</div><div class="p-sub">后开始短休息（30 秒）</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="cur"></i><i></i><i class="long"></i></span>第 2 / 4 轮</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+          </div>
+          <div class="platter p-water alert">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>2</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:25%"></i></div>
+            <div class="pw-meta">距上次喝水 2 小时 10 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑥ 刚点了 +1 -->
+      <div class="cell">
+        <div class="anno"><b>⑥ 刚点了「+1 杯」</b>5 秒内可撤销</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring" data-size="56" data-stroke="5" data-f="0.81" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="eye"></span></span>
+              <div><div class="p-time">24:11</div><div class="p-sub">后开始短休息（30 秒）</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="cur"></i><i class="long"></i></span>第 3 / 4 轮 · 下轮长休息</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>4</b> / 8 杯</span><span class="pw-btn ghost"><span class="ic" data-ic="undo"></span>撤销</span></div>
+            <div class="pw-bar"><i style="width:50%"></i></div>
+            <div class="pw-meta ok">✓ 已记录 · 5 秒内可撤销</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑦ 深色模式 -->
+      <div class="cell">
+        <div class="anno"><b>⑦ 深色模式</b>跟随系统外观</div>
+        <div class="panel dark">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring" data-size="56" data-stroke="5" data-f="0.81" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="eye"></span></span>
+              <div><div class="p-time">24:13</div><div class="p-sub">后开始短休息（30 秒）</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="cur"></i><i class="long"></i></span>第 3 / 4 轮 · 下轮长休息</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">短休息 · 30 秒</div></div></div>
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>3</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:37.5%"></i></div>
+            <div class="pw-meta">距上次喝水 1 小时 20 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑧ 下一次是长休息 -->
+      <div class="cell">
+        <div class="anno"><b>⑧ 下一次是长休息</b>第 4 轮</div>
+        <div class="panel">
+          <div class="platter p-status">
+            <div class="p-head">
+              <span class="ring" data-size="56" data-stroke="5" data-f="0.42" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="walk"></span></span>
+              <div><div class="p-time">12:40</div><div class="p-sub">后开始长休息（5 分钟）</div></div>
+            </div>
+            <div class="p-rounds"><span class="dots"><i class="done"></i><i class="done"></i><i class="done"></i><i class="long cur"></i></span>第 4 / 4 轮 · 长休息</div>
+          </div>
+          <div class="p-tiles">
+            <div class="platter tile"><span class="tile-ic on"><span class="ic" data-ic="coffee"></span></span><div><div class="tile-t">立即休息</div><div class="tile-s">长休息 · 5 分钟</div></div></div>
+            <div class="platter tile"><span class="tile-ic"><span class="ic" data-ic="pause"></span></span><div><div class="tile-t">暂停</div><div class="tile-s">选择时长</div></div><span class="ic chev" data-ic="chev-down"></span></div>
+          </div>
+          <div class="platter p-water">
+            <div class="pw-row"><span class="ic drop" data-ic="drop"></span><span class="pw-count">今日 <b>4</b> / 8 杯</span><span class="pw-btn">+1 杯</span></div>
+            <div class="pw-bar"><i style="width:50%"></i></div>
+            <div class="pw-meta">距上次喝水 35 分</div>
+          </div>
+          <div class="p-menu">
+            <div class="mi"><span class="ic" data-ic="chart"></span>报表…</div>
+            <div class="mi"><span class="ic" data-ic="gear"></span>设置…<kbd>⌘,</kbd></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="ic" data-ic="power"></span>退出歇会儿<kbd>⌘Q</kbd></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 04 预告浮窗 ============ -->
+<section class="shot" id="04-hud" data-w="1000" data-h="600">
+  <h2>04 · 休息预告浮窗</h2>
+  <ul class="notes">
+    <li>到点前 30 秒（可改，设为 0 表示不预告）弹出，位于鼠标所在屏幕的右上角、菜单栏下方。</li>
+    <li>浮窗不抢键盘焦点：正在编辑器里输入的内容不受影响，按钮可以直接点。</li>
+    <li>「推迟 5 分钟」不限次数，每次都记入报表；「立即开始」直接进入休息；倒计时走完自动开始休息。</li>
+    <li>不使用系统通知；开会时不弹出（见 03 ④）。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="wallpaper"></div>
+    <div class="menubar" data-app="Xcode" data-menus="文件 编辑 显示 查找 导航 编辑器 产品 调试 窗口 帮助" data-state="warning" data-time="10月27日 周二 10:47"></div>
+    <div class="win editor" data-clip>
+      <div class="toolbar"><span class="lights"><i></i><i></i><i></i></span><span class="tb-title">XieHuiEr</span><span class="tb-sub">BreakScheduler.swift</span></div>
+      <div class="ed-side">
+        <div class="f"><span class="ic" data-ic="folder"></span>XieHuiEr</div>
+        <div class="f l1"><span class="ic" data-ic="folder"></span>App</div>
+        <div class="f l1"><span class="ic" data-ic="folder"></span>Core</div>
+        <div class="f l2 sw sel"><span class="ic" data-ic="doc"></span>BreakScheduler.swift</div>
+        <div class="f l2 sw"><span class="ic" data-ic="doc"></span>BreakSettings.swift</div>
+        <div class="f l2 sw"><span class="ic" data-ic="doc"></span>WorkHours.swift</div>
+        <div class="f l1"><span class="ic" data-ic="folder"></span>System</div>
+        <div class="f l1"><span class="ic" data-ic="folder"></span>Data</div>
+        <div class="f l1"><span class="ic" data-ic="folder"></span>UI</div>
+        <div class="f"><span class="ic" data-ic="folder"></span>XieHuiErTests</div>
+      </div>
+      <div class="code">
+        <span class="ln"><span class="kw">import</span> Foundation</span>
+        <span class="ln"> </span>
+        <span class="ln"><span class="cm">/// 计时状态机：输入「事件 + 当前时间」，输出新状态和副作用</span></span>
+        <span class="ln"><span class="kw">struct</span> <span class="ty">BreakScheduler</span> {</span>
+        <span class="ln">    <span class="kw">private</span>(<span class="kw">set</span>) <span class="kw">var</span> state: <span class="ty">State</span></span>
+        <span class="ln">    <span class="kw">private</span>(<span class="kw">set</span>) <span class="kw">var</span> roundsSinceLong = <span class="nu">0</span></span>
+        <span class="ln">    <span class="kw">var</span> settings: <span class="ty">BreakSettings</span></span>
+        <span class="ln"> </span>
+        <span class="ln">    <span class="kw">mutating func</span> <span class="fn">tick</span>(now: <span class="ty">Date</span>) -&gt; [<span class="ty">Effect</span>] {</span>
+        <span class="ln">        <span class="kw">switch</span> state {</span>
+        <span class="ln">        <span class="kw">case</span> .<span class="fn">working</span>(<span class="kw">let</span> pending):</span>
+        <span class="ln">            <span class="kw">let</span> warnAt = pending.dueAt.<span class="fn">addingTimeInterval</span>(-settings.warningLead)</span>
+        <span class="ln">            <span class="kw">guard</span> now &gt;= warnAt <span class="kw">else</span> { <span class="kw">return</span> [] }</span>
+        <span class="ln">            <span class="kw">return</span> <span class="fn">beginWarning</span>(pending, now: now)</span>
+        <span class="ln">        <span class="kw">case</span> .<span class="fn">warning</span>(<span class="kw">let</span> pending) <span class="kw">where</span> now &gt;= pending.dueAt:</span>
+        <span class="ln">            <span class="kw">return</span> <span class="fn">startBreak</span>(pending, now: now)</span>
+        <span class="ln">        <span class="kw">default</span>:</span>
+        <span class="ln">            <span class="kw">return</span> []</span>
+        <span class="ln">        }</span>
+        <span class="ln">    }</span>
+        <span class="ln"> </span>
+        <span class="ln">    <span class="cm">/// 下一轮的类型：短 短 短 长</span></span>
+        <span class="ln">    <span class="kw">var</span> nextKind: <span class="ty">BreakKind</span> {</span>
+        <span class="ln">        <span class="kw">let</span> isLong = settings.longEnabled &amp;&amp; roundsSinceLong &gt;= settings.longEvery - <span class="nu">1</span></span>
+        <span class="ln cur">        <span class="kw">return</span> isLong ? .long : .sh<span class="caret"></span></span>
+      </div>
+    </div>
+    <div class="hud" style="top:34px; right:10px">
+      <div class="hud-top">
+        <span class="ring" data-size="44" data-stroke="4" data-f="0.93" data-color="var(--accent)" data-track="var(--fill-strong)"><span class="ic" data-ic="eye"></span></span>
+        <div><div class="hud-title">28 秒后开始短休息</div><div class="hud-sub">休息 30 秒，看看远处</div></div>
+      </div>
+      <div class="hud-btns"><span class="btn">推迟 5 分钟</span><span class="btn primary">立即开始</span></div>
+    </div>
+    <div class="anno" style="right:40px; bottom:44px">
+      <b>04 · 休息预告浮窗</b>
+      <ul>
+        <li>到点前 30 秒出现在鼠标所在屏幕的右上角</li>
+        <li>不抢键盘焦点：编辑器里照常打字</li>
+        <li>推迟不限次数，每次都记入报表</li>
+        <li>不使用系统通知；开会时不弹出</li>
+      </ul>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 05 遮罩 · 短休息 ============ -->
+<section class="shot" id="05-overlay-short" data-w="1440" data-h="900">
+  <h2>05 · 全屏遮罩 · 短休息</h2>
+  <ul class="notes">
+    <li>覆盖所有屏幕（每块屏幕各一个窗口），包括所有桌面、其他 App 的全屏界面、程序坞和菜单栏。</li>
+    <li>深色毛玻璃加半透明黑色；倒计时 72pt，进度环直径 240pt；淡入 0.4 秒，淡出 0.3 秒。</li>
+    <li>遮罩期间拦截键盘输入，Esc 不会跳过；「跳过休息」从一开始就能点，跳过后重新开始完整的一轮。</li>
+    <li>「喝了一杯水」只记录、不结束休息，每次休息只能点一次；点击后变为「✓ 已记录 · 今日 x 杯」。</li>
+    <li>倒计时结束时播放一声轻提示音（可关闭），遮罩自动退出，焦点还给休息前的 App。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="overlay">
+      <div class="ov-scene">
+        <div class="wallpaper"></div>
+        <div class="fake-win" style="left:200px; top:180px; width:800px; height:560px"><div class="fw-bar"></div><div class="fw-side"></div><div class="fw-hero"></div></div>
+        <div class="fake-win" style="left:900px; top:280px; width:540px; height:470px"><div class="fw-bar"></div></div>
+        <div class="fake-dock"></div>
+      </div>
+      <div class="ov-dim"></div>
+      <div class="ov-content">
+        <div class="ov-pill"><span class="ic" data-ic="eye"></span>短休息 · 30 秒</div>
+        <span class="ring ov-ring" data-size="240" data-stroke="10" data-f="0.8" data-color="rgba(255,255,255,.92)" data-track="rgba(255,255,255,.14)"><span class="ov-time">00:24</span></span>
+        <div class="ov-tip">看向 6 米外的地方，让眼睛放松一下</div>
+        <div class="ov-water">
+          <button class="water-btn"><span class="ic" data-ic="drop"></span>喝了一杯水</button>
+          <div class="ov-meta">距上次喝水 1 小时 44 分</div>
+        </div>
+      </div>
+      <button class="ov-skip">跳过休息</button>
+    </div>
+    <div class="anno" style="left:28px; top:28px">
+      <b>05 · 全屏遮罩 · 短休息</b>
+      <ul>
+        <li>覆盖所有屏幕，包括菜单栏、程序坞和全屏 App</li>
+        <li>倒计时结束自动退出，焦点还给原来的 App</li>
+        <li>Esc 不会跳过；「跳过休息」随时可点</li>
+        <li>喝水按钮只记录、不结束休息，每次休息限一次</li>
+      </ul>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 06 遮罩 · 长休息 ============ -->
+<section class="shot" id="06-overlay-long" data-w="1440" data-h="900">
+  <h2>06 · 全屏遮罩 · 长休息</h2>
+  <ul class="notes">
+    <li>「短 短 短 长」：每到第 4 轮是长休息，默认 5 分钟，可在设置中关闭。</li>
+    <li>长休息显示活动建议，短休息显示护眼建议，每次随机一条。</li>
+    <li>跳过长休息时轮次计数不变，下一轮仍是长休息。</li>
+    <li>本例中距上次喝水已满 2 小时，喝水按钮高亮。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="overlay">
+      <div class="ov-scene">
+        <div class="wallpaper"></div>
+        <div class="fake-win" style="left:200px; top:180px; width:800px; height:560px"><div class="fw-bar"></div><div class="fw-side"></div><div class="fw-hero"></div></div>
+        <div class="fake-win" style="left:900px; top:280px; width:540px; height:470px"><div class="fw-bar"></div></div>
+        <div class="fake-dock"></div>
+      </div>
+      <div class="ov-dim"></div>
+      <div class="ov-content">
+        <div class="ov-pill"><span class="ic" data-ic="walk"></span>长休息 · 5 分钟</div>
+        <span class="ring ov-ring" data-size="240" data-stroke="10" data-f="0.84" data-color="rgba(255,255,255,.92)" data-track="rgba(255,255,255,.14)"><span class="ov-time">04:12</span></span>
+        <div class="ov-tip">站起来走一走，活动一下肩颈和腰背</div>
+        <div class="ov-water">
+          <button class="water-btn hot"><span class="ic" data-ic="drop"></span>喝了一杯水</button>
+          <div class="ov-meta">距上次喝水 2 小时 15 分</div>
+        </div>
+      </div>
+      <button class="ov-skip">跳过休息</button>
+    </div>
+    <div class="anno" style="left:28px; top:28px">
+      <b>06 · 全屏遮罩 · 长休息</b>
+      <ul>
+        <li>每到第 4 轮是长休息，默认 5 分钟</li>
+        <li>长休息给活动建议，短休息给护眼建议</li>
+        <li>距上次喝水满 2 小时，喝水按钮高亮</li>
+        <li>跳过长休息后，下一轮仍是长休息</li>
+      </ul>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 07 设置 ============ -->
+<section class="shot" id="07-settings" data-w="1640" data-h="720">
+  <h2>07 · 设置（三个标签页）</h2>
+  <ul class="notes">
+    <li>从面板的「设置… ⌘,」打开；标签页为 通用 / 休息 / 喝水；修改后立即保存并生效。</li>
+    <li>修改后当前这一轮从头计时（轮次计数保留）；如果在休息进行中修改，等这次休息结束后再生效。</li>
+    <li>输入超出范围时标红提示，并且不保存（右侧为示例）。取值范围见 memory/plan.md §4.3。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="wallpaper soft"></div>
+    <div class="cols">
+
+      <div class="col">
+        <div class="win settings">
+          <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span>通用</div>
+          <div class="tabs">
+            <div class="tab sel"><span class="ic" data-ic="gear"></span>通用</div>
+            <div class="tab"><span class="ic" data-ic="eye"></span>休息</div>
+            <div class="tab"><span class="ic" data-ic="drop"></span>喝水</div>
+          </div>
+          <div class="form">
+            <div class="sec-h">工作时间</div>
+            <div class="group">
+              <div class="row"><span>只在工作时间提醒</span><span class="switch on"></span></div>
+              <div class="row"><span>工作日</span><span class="chips"><i class="on">一</i><i class="on">二</i><i class="on">三</i><i class="on">四</i><i class="on">五</i><i>六</i><i>日</i></span></div>
+              <div class="row"><span>时间段</span><span class="ctl"><span class="field">09:00</span><span class="stepper"></span><span class="to">至</span><span class="field">19:00</span><span class="stepper"></span></span></div>
+            </div>
+            <div class="foot">非工作时间不提醒，菜单栏图标变灰。不识别节假日和调休，放假时可在面板中暂停。时间段不能跨午夜。</div>
+
+            <div class="sec-h">离开与会议</div>
+            <div class="group">
+              <div class="row"><span>无操作多久算离开</span><span class="ctl"><span class="field">5</span><span class="stepper"></span><span class="unit">分钟</span></span></div>
+              <div class="row"><span>开会时自动推迟</span><span class="switch on"></span></div>
+            </div>
+            <div class="foot">离开、锁屏或睡眠都算已经休息过，回来后重新开始一轮。麦克风或摄像头被占用时视为开会，会议结束后再提醒。</div>
+
+            <div class="sec-h">启动</div>
+            <div class="group">
+              <div class="row"><span>开机自动启动</span><span class="switch on"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="win settings">
+          <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span>休息</div>
+          <div class="tabs">
+            <div class="tab"><span class="ic" data-ic="gear"></span>通用</div>
+            <div class="tab sel"><span class="ic" data-ic="eye"></span>休息</div>
+            <div class="tab"><span class="ic" data-ic="drop"></span>喝水</div>
+          </div>
+          <div class="form">
+            <div class="sec-h">短休息</div>
+            <div class="group">
+              <div class="row"><span>间隔</span><span class="ctl"><span class="field">30</span><span class="stepper"></span><span class="unit">分钟</span></span></div>
+              <div class="row"><span>时长</span><span class="ctl"><span class="field">30</span><span class="stepper"></span><span class="unit">秒</span></span></div>
+            </div>
+
+            <div class="sec-h">长休息</div>
+            <div class="group">
+              <div class="row"><span>启用长休息</span><span class="switch on"></span></div>
+              <div class="row"><span>频率</span><span class="ctl"><span class="unit">每</span><span class="field">4</span><span class="stepper"></span><span class="unit">轮一次</span></span></div>
+              <div class="row"><span>时长</span><span class="ctl"><span class="field">5</span><span class="stepper"></span><span class="unit">分钟</span></span></div>
+            </div>
+            <div class="foot">节奏为「短 短 短 长」，按 30 分钟间隔约每 2 小时一次长休息。跳过长休息时，下一轮仍是长休息。</div>
+
+            <div class="sec-h">提醒</div>
+            <div class="group">
+              <div class="row"><span>休息前预告</span><span class="ctl"><span class="field">30</span><span class="stepper"></span><span class="unit">秒</span></span></div>
+              <div class="row"><span>推迟时长</span><span class="ctl"><span class="field">5</span><span class="stepper"></span><span class="unit">分钟</span></span></div>
+              <div class="row"><span>休息结束提示音</span><span class="switch on"></span></div>
+              <div class="row"><span>显示休息建议</span><span class="switch on"></span></div>
+            </div>
+            <div class="foot">预告设为 0 表示不预告，到点直接开始休息。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="win settings">
+          <div class="titlebar"><span class="lights"><i></i><i></i><i></i></span>喝水</div>
+          <div class="tabs">
+            <div class="tab"><span class="ic" data-ic="gear"></span>通用</div>
+            <div class="tab"><span class="ic" data-ic="eye"></span>休息</div>
+            <div class="tab sel"><span class="ic" data-ic="drop"></span>喝水</div>
+          </div>
+          <div class="form">
+            <div class="sec-h">喝水</div>
+            <div class="group">
+              <div class="row"><span>每日目标</span><span class="ctl"><span class="field">8</span><span class="stepper"></span><span class="unit">杯</span></span></div>
+            </div>
+            <div class="foot">设为 0 表示不设目标。距上次喝水满 2 小时后，面板和遮罩上的喝水按钮会高亮。</div>
+          </div>
+        </div>
+        <div class="anno flow"><b>输入超出范围时（局部示意）</b>输入框标红并提示，这次修改不保存。</div>
+        <div class="win settings">
+          <div class="form">
+            <div class="group">
+              <div class="row"><span>每日目标</span><span class="ctl"><span class="field err">200</span><span class="stepper"></span><span class="unit">杯</span></span></div>
+            </div>
+            <div class="err-msg"><span class="ic" data-ic="alert"></span>请输入 0–30 之间的数字</div>
+          </div>
+        </div>
+        <div class="anno flow">
+          <b>07 · 设置</b>
+          <ul>
+            <li>从面板「设置… ⌘,」打开；修改后立即保存并生效</li>
+            <li>当前这一轮从头计时，轮次计数保留</li>
+            <li>休息进行中修改的，等这次休息结束后生效</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 08 报表 · 喝水 ============ -->
+<section class="shot" id="08-report-water" data-w="920" data-h="770">
+  <h2>08 · 报表 · 喝水</h2>
+  <ul class="notes">
+    <li>从面板的「报表…」打开的独立窗口；顶部切换「喝水 / 休息」和「近 7 天 / 近 30 天」。</li>
+    <li>概览：今日杯数、日均杯数、达标天数；柱状图带目标线，达标的柱子是实色。</li>
+    <li>点选某一天，下方显示当天每次喝水的时间；鼠标悬停在某条记录上时可以删除。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="wallpaper soft"></div>
+    <div class="stack">
+      <div class="win report">
+        <div class="toolbar">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <span class="tb-title">报表</span>
+          <span class="seg tb-center"><i class="sel">喝水</i><i>休息</i></span>
+          <span class="seg tb-right"><i class="sel">近 7 天</i><i>近 30 天</i></span>
+        </div>
+        <div class="rp-body">
+          <div class="cards">
+            <div class="card"><div class="k"><span class="ic" data-ic="drop" style="color:var(--water)"></span>今日</div><div class="v">3<small>/ 8 杯</small></div><div class="s">距上次喝水 1 小时 20 分</div></div>
+            <div class="card"><div class="k">日均</div><div class="v">6.1<small>杯</small></div><div class="s">近 7 天共 43 杯</div></div>
+            <div class="card"><div class="k">达标</div><div class="v">3<small>/ 7 天</small></div><div class="s">每日目标 8 杯</div></div>
+          </div>
+          <div class="card">
+            <div class="card-h">每日杯数<span class="legend"><span><i style="background:var(--water)"></i>达标</span><span><i style="background:var(--water); opacity:.42"></i>未达标</span><span><i class="dash"></i>目标</span></span></div>
+            <div class="chart" data-chart="water" data-w="808" data-h="230"></div>
+          </div>
+          <div class="card">
+            <div class="day-h">
+              <span class="nav"><span class="ic" data-ic="chev-left"></span></span>
+              <span class="t">10月27日 周二</span><span class="c">· 3 杯</span>
+              <span class="nav off"><span class="ic" data-ic="chev-right"></span></span>
+              <span class="hint">在柱状图中点选日期，可查看当天明细</span>
+            </div>
+            <div class="rec"><span class="ic drop" data-ic="drop"></span><span class="tm">09:04</span><span class="n">第 3 杯</span><span class="del"><span class="ic" data-ic="trash"></span></span></div>
+            <div class="rec hover"><span class="ic drop" data-ic="drop"></span><span class="tm">08:40</span><span class="n">第 2 杯</span><span class="del"><span class="ic" data-ic="trash"></span>删除</span></div>
+            <div class="rec"><span class="ic drop" data-ic="drop"></span><span class="tm">08:12</span><span class="n">第 1 杯</span><span class="del"><span class="ic" data-ic="trash"></span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="anno flow"><b>08 · 报表 · 喝水</b>柱状图带目标线，达标的柱子为实色；点选某天查看每次喝水的时间，悬停在记录上可删除。</div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ 09 报表 · 休息 ============ -->
+<section class="shot" id="09-report-break" data-w="920" data-h="875">
+  <h2>09 · 报表 · 休息</h2>
+  <ul class="notes">
+    <li>概览：完成、跳过、完成率、推迟（另列开会自动推迟）。</li>
+    <li>完成率 = 完成 ÷（完成 + 跳过）；推迟不影响完成率。</li>
+    <li>堆叠柱状图：绿色为完成，橙色为跳过；下方是每日明细，最新的一天在最上面。</li>
+  </ul>
+  <div class="frame-wrap"><div class="frame">
+    <div class="wallpaper soft"></div>
+    <div class="stack">
+      <div class="win report">
+        <div class="toolbar">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <span class="tb-title">报表</span>
+          <span class="seg tb-center"><i>喝水</i><i class="sel">休息</i></span>
+          <span class="seg tb-right"><i class="sel">近 7 天</i><i>近 30 天</i></span>
+        </div>
+        <div class="rp-body">
+          <div class="cards four">
+            <div class="card"><div class="k"><i class="dot" style="background:var(--green)"></i>完成</div><div class="v">52<small>次</small></div><div class="s">近 7 天</div></div>
+            <div class="card"><div class="k"><i class="dot" style="background:var(--orange)"></i>跳过</div><div class="v">7<small>次</small></div><div class="s">近 7 天</div></div>
+            <div class="card"><div class="k">完成率</div><div class="v">88<small>%</small></div><div class="s">完成 ÷（完成 + 跳过）</div></div>
+            <div class="card"><div class="k">推迟</div><div class="v">12<small>次</small></div><div class="s">另有开会自动推迟 6 次</div></div>
+          </div>
+          <div class="card">
+            <div class="card-h">每日休息次数<span class="legend"><span><i style="background:var(--green)"></i>完成</span><span><i style="background:var(--orange)"></i>跳过</span></span></div>
+            <div class="chart" data-chart="breaks" data-w="808" data-h="210"></div>
+          </div>
+          <div class="card">
+            <div class="card-h">每日明细</div>
+            <table class="tbl">
+              <thead><tr><th>日期</th><th>完成</th><th>跳过</th><th>推迟</th><th>开会自动推迟</th><th>完成率</th></tr></thead>
+              <tbody>
+                <tr><td>10月27日 周二<span class="tag">今天</span></td><td>2</td><td>0</td><td>1</td><td>0</td><td>100%</td></tr>
+                <tr><td>10月26日 周一</td><td>13</td><td>1</td><td>2</td><td>3</td><td>93%</td></tr>
+                <tr class="off"><td>10月25日 周日</td><td>0</td><td>0</td><td>0</td><td>0</td><td>—</td></tr>
+                <tr class="off"><td>10月24日 周六</td><td>0</td><td>0</td><td>0</td><td>0</td><td>—</td></tr>
+                <tr><td>10月23日 周五</td><td>11</td><td>3</td><td>4</td><td>0</td><td>79%</td></tr>
+                <tr><td>10月22日 周四</td><td>14</td><td>1</td><td>2</td><td>2</td><td>93%</td></tr>
+                <tr><td>10月21日 周三</td><td>12</td><td>2</td><td>3</td><td>1</td><td>86%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="anno flow"><b>09 · 报表 · 休息</b>完成率 = 完成 ÷（完成 + 跳过），推迟不影响完成率；绿色为完成，橙色为跳过。</div>
+    </div>
+  </div></div>
+</section>
+
+</main>
+
+<script src="mockup.js"></script>
+</body>
+</html>

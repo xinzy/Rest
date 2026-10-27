@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Xcode：构建产物和个人设置
+build/
+xcuserdata/
+
+# 由 project.yml 生成（xcodegen generate），不纳入版本管理
+XieHuiEr.xcodeproj/
