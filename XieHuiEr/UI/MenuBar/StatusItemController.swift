@@ -1,18 +1,23 @@
 import AppKit
 
-/// 菜单栏图标和面板：点击图标打开或收起面板；点击别处、按 Esc 或面板失去焦点时收起。
+/// 菜单栏图标和面板：图标随计时状态重绘；点击图标打开或收起面板；点击别处、按 Esc 或面板失去焦点时收起。
 @MainActor
 final class StatusItemController: NSObject, NSWindowDelegate {
+    private let controller: BreakController
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    private lazy var panel = PanelWindow(rootView: PanelView(onQuit: { [weak self] in self?.quit() }))
+    private lazy var panel = PanelWindow(rootView: PanelView(controller: controller, actions: panelActions))
+    private let reportWindow = PlaceholderWindowController(title: "报表", message: "报表开发中（S9）")
+    private let settingsWindow = PlaceholderWindowController(title: "设置", message: "设置开发中（S10）")
     private var eventMonitors: [Any] = []
+    private var iconStyle: RingIconStyle?
 
-    override init() {
+    init(controller: BreakController) {
+        self.controller = controller
         super.init()
         guard let button = statusItem.button else {
             preconditionFailure("NSStatusItem 没有 button")
         }
-        button.image = Self.ringImage()
+        updateIcon()
         button.setAccessibilityTitle("歇会儿")
         button.target = self
         button.action = #selector(statusItemClicked)
@@ -20,9 +25,37 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         panel.delegate = self
     }
 
+    /// 状态变化后调用：样式没变时不重绘
+    func updateIcon() {
+        let style = RingIconStyle(state: controller.scheduler.state, settings: controller.scheduler.settings, now: controller.now)
+        guard style != iconStyle else { return }
+        iconStyle = style
+        statusItem.button?.image = RingIcon.image(style)
+    }
+
+    private var panelActions: PanelView.Actions {
+        PanelView.Actions(
+            breakNow: { [weak self] in self?.controller.breakNow() },
+            pause: { [weak self] in self?.controller.pause($0) },
+            resume: { [weak self] in self?.controller.resume() },
+            openReport: { [weak self] in self?.open(self?.reportWindow) },
+            openSettings: { [weak self] in self?.open(self?.settingsWindow) },
+            quit: { [weak self] in self?.quit() }
+        )
+    }
+
+    private func open(_ window: PlaceholderWindowController?) {
+        closePanel()
+        window?.show()
+    }
+
     func showPanel() {
         guard let itemWindow = statusItem.button?.window, let screen = itemWindow.screen ?? NSScreen.main else {
             preconditionFailure("找不到菜单栏图标所在的屏幕")
+        }
+        // 内容高度随状态变化（例如暂停时的按钮），打开前按当前内容重新计算尺寸
+        if let content = panel.contentView {
+            panel.setContentSize(content.fittingSize)
         }
         panel.setFrameTopLeftPoint(PanelPlacement.topLeft(
             width: panel.frame.width, under: itemWindow.frame, visibleFrame: screen.visibleFrame))
@@ -72,7 +105,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         eventMonitors.removeAll()
     }
 
-    /// 面板打开期间的快捷键：Esc 收起面板，⌘Q 退出
+    /// 面板打开期间的快捷键：Esc 收起面板，⌘, 打开设置，⌘Q 退出
     private func handleKeyDown(_ event: NSEvent) -> Bool {
         let modifiers = event.modifierFlags.intersection([.command, .option, .control, .shift])
         if event.keyCode == 53, modifiers.isEmpty {
@@ -83,6 +116,10 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             quit()
             return true
         }
+        if modifiers == .command, event.charactersIgnoringModifiers == "," {
+            open(settingsWindow)
+            return true
+        }
         return false
     }
 
@@ -90,19 +127,6 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     private func quit() {
         closePanel()
         NSApp.terminate(nil)
-    }
-
-    /// 静态圆环，与「工作中」剩余时间满格时相同：18×18pt 模板图，半径 7pt，线宽 2pt
-    private static func ringImage() -> NSImage {
-        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: false) { _ in
-            let ring = NSBezierPath(ovalIn: NSRect(x: 2, y: 2, width: 14, height: 14))
-            ring.lineWidth = 2
-            NSColor.black.setStroke()
-            ring.stroke()
-            return true
-        }
-        image.isTemplate = true
-        return image
     }
 }
 

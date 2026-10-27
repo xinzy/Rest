@@ -230,8 +230,7 @@ private extension BreakScheduler {
 
     mutating func startBreak(_ trigger: BreakTrigger, now: Date) {
         let kind = nextKind
-        let duration = kind == .long ? settings.longDuration : settings.shortDuration
-        activeBreak = ActiveBreak(kind: kind, trigger: trigger, startedAt: now, endsAt: now + duration)
+        activeBreak = ActiveBreak(kind: kind, trigger: trigger, startedAt: now, endsAt: now + settings.duration(of: kind))
         reconcile(now: now)
     }
 

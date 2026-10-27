@@ -17,6 +17,10 @@ struct BreakSettings: Equatable, Sendable {
     /// 开会推迟后多久复查一次，不在设置界面中提供
     var meetingRecheckInterval: TimeInterval = 60
 
+    func duration(of kind: BreakKind) -> TimeInterval {
+        kind == .long ? longDuration : shortDuration
+    }
+
     /// DEBUG 快速模式（`-fastMode YES`）：时长都换成秒级，不受取值范围限制
     static let fastMode = BreakSettings(
         shortInterval: 60,
