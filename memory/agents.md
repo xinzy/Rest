@@ -22,6 +22,6 @@
   - 加了 `--disable-gpu` 时 backdrop-filter 毛玻璃仍然有效；苹果标志（U+F8FF）和苹方字体都能正常显示
 - ⚠️ 系统自带的 bash 是 3.2：变量后面紧跟全角字符时（如 `$id（`）会被当成变量名的一部分，必须写成 `${id}`
 - 代码仓库：2026-10-27 经用户同意执行了 git init（main 分支，仅本地，没有远程仓库）
-- 终端是 iTerm2，没有「辅助功能」和「屏幕录制」权限（2026-10-27 用 AXIsProcessTrusted / CGPreflightScreenCaptureAccess 检查）：
-  不能模拟点击和按键；不要直接运行 screencapture（会弹出授权请求）。
-  可以不经授权读取窗口的位置、层级和所属进程（CGWindowListCopyWindowInfo，读不到窗口标题）
+- 终端是 iTerm2，没有「辅助功能」权限（2026-10-27 用 AXIsProcessTrusted 检查）：不能模拟点击和按键，交互验证需要用户手动操作。
+- iTerm2 已有「屏幕录制」权限（2026-10-27 用户授权，不需要重启 iTerm）：可以用 screencapture 截图（命令见 verify.md）。
+- 不需要任何权限就能读取窗口的位置、层级和所属进程（CGWindowListCopyWindowInfo，读不到窗口标题），见 `tools/winlist.swift`。

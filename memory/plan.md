@@ -189,13 +189,21 @@ Rest/                            仓库根目录
 │   │   └── Settings/            设置窗口及三个标签页
 │   └── Resources/               Info.plist（LSUIElement = YES）、Assets
 ├── XieHuiErTests/               状态机、工作时间、数据汇总的单元测试
+├── tools/                       开发辅助脚本（winlist.swift：列出窗口的 id 和位置）
 ├── design/mockups/              HTML 原型和截图（视觉基准）
+├── .agent/visual/               界面验证记录和截图
 └── memory/                      设计文档和进度记录
 ```
 
 ### 5.2 关键实现
 
 - **菜单栏**：用 `NSStatusItem` 加一个自定义的无箭头 `NSPanel`（内容用 SwiftUI 编写），不用 `MenuBarExtra`。原因是需要在休息开始时用代码关闭面板，还要动态绘制进度环图标。
+  S1 实测确认：
+  - **面板本身**：无边框的 `.nonactivatingPanel`，层级 `.statusBar`。打开后前台 App 不变。
+  - **收起方式**：失去焦点、点击其他 App、按 Esc、再点一次图标，四种都会收起。
+  - **菜单追踪通知**：打开和收起面板时成对发出 HIToolbox 的 begin/endMenuTracking 通知，让其他 App 全屏时菜单栏保持显示。退出也要先收起面板，否则两条通知不成对。
+  - **多显示器**：每块屏幕的菜单栏上都有一个图标窗口。点击时 `statusItem.button.window` 就是被点的那块屏幕上的图标窗口，面板会出现在被点的图标下方。
+  - **启动时**：刚启动时图标窗口还在排版，先在屏幕外，之后才移到屏幕边缘，所以不能在 `applicationDidFinishLaunching` 里立即按它定位。
 - **设置和报表窗口**：自行管理 `NSWindow` 并用 `NSHostingController` 承载 SwiftUI 内容；打开窗口时激活 App；关闭窗口不会退出 App。
 - **遮罩**：每块屏幕一个无边框窗口，窗口层级为 `.screenSaver`，`collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]`；内容是深色的 `NSVisualEffectView` 加 SwiftUI 视图。屏幕配置变化时重建窗口；显示前记下当前的前台 App，结束后重新激活它。
 - **预告浮窗**：使用 `NSPanel`（`.nonactivatingPanel`），不会成为 key window，按钮可以直接点击。

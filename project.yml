@@ -1,0 +1,58 @@
+name: XieHuiEr
+
+options:
+  bundleIdPrefix: com.shaozeng
+  deploymentTarget:
+    macOS: "14.0"
+  developmentLanguage: zh-Hans
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # 仅自用：ad-hoc 签名，不需要开发者账号
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  XieHuiEr:
+    type: application
+    platform: macOS
+    sources:
+      - path: XieHuiEr
+    info:
+      path: XieHuiEr/Resources/Info.plist
+      properties:
+        CFBundleName: 歇会儿
+        CFBundleDisplayName: 歇会儿
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shaozeng.xiehuier
+
+  XieHuiErTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: XieHuiErTests
+    dependencies:
+      - target: XieHuiEr
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shaozeng.xiehuier.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  XieHuiEr:
+    build:
+      targets:
+        XieHuiEr: all
+        XieHuiErTests: [test]
+    test:
+      targets:
+        - XieHuiErTests

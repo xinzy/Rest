@@ -2,7 +2,12 @@
 
 ## 每个切片的完成标准
 
-1. **构建**：没有 error，也不新增 warning。
+1. **构建**：没有 error，也不新增 warning。只统计指向 `.swift` 文件的 warning：
+   `xcodebuild … 2>&1 | grep -E "\.swift:[0-9]+:[0-9]+: (warning|error)"`。
+   以下两条来自工具链，不是我们的代码，可以忽略：
+   - `appintentsmetadataprocessor … Metadata extraction skipped. No AppIntents.framework dependency found.`
+   - 运行测试时 `XCTAutomationSupport` / `XCUIAutomation` 的 `Failed to parse executable`。
+     运行测试会把 XCTest 框架拷进 Debug 版 App，不影响运行。
 2. **测试**：单元测试全部通过；改动了 `Core/` 或 `Data/` 的切片，必须新增或更新相应的测试。
 3. **运行**：启动 App 不崩溃，日志中没有意外的 error 或 fault；按切片的验收要点（plan.md §6）实际操作一遍。
 4. **界面**：涉及界面的切片要截图，并和原型 `design/mockups/screenshots/` 对比；截图和说明写入 `.agent/visual/`（格式见下文）。
@@ -27,16 +32,24 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \
 # 启动（普通模式 / 快速模式）
 open build/Build/Products/Debug/XieHuiEr.app
 open build/Build/Products/Debug/XieHuiEr.app --args -fastMode YES
+# DEBUG：启动 1 秒后自动打开面板（刚启动时菜单栏图标还在排版，不能立刻打开）
+open -g build/Build/Products/Debug/XieHuiEr.app --args -openPanel YES
 
-# 退出 App：先查到 PID，再用 kill 结束（不要用 pkill 或 killall）
+# 退出 App：先查到 PID，再用 kill 结束（不要用 pkill 或 killall）。
+# kill 后面必须直接写数字，写成 kill "$PID" 会被工具拒绝，所以查 PID 和 kill 要分两次执行。
 pgrep -x XieHuiEr
 kill <PID>
 
-# 查看日志中的错误
-log show --last 5m --style compact --predicate 'process == "XieHuiEr"' | grep -iE "error|fault"
+# 确认没有 Dock 图标：应输出 "ApplicationType"="UIElement"
+lsappinfo info -only ApplicationType <PID>
 
-# 截图
-screencapture -x .agent/visual/<名称>.png
+# 查看日志中的错误。按消息类型过滤，不要用 grep "fault"（会匹配到每行都有的 "default"）
+log show --last 5m --style compact --predicate 'process == "XieHuiEr" AND (messageType == error OR messageType == fault)'
+
+# 窗口位置和截图（iTerm 已有屏幕录制权限）
+swift tools/winlist.swift <PID>                         # 列出窗口 id、层级和位置（CG 坐标：主屏左上角为原点，y 向下）
+screencapture -x -l<窗口id> .agent/visual/<名称>.png     # 只截这个窗口（含阴影）
+screencapture -x -R<x,y,w,h> .agent/visual/<名称>.png    # 截一块区域（CG 坐标）
 
 # 重新生成原型截图（先检查脚本错误和内容是否超出画框，有问题就报错退出、不截图）
 design/mockups/capture.sh            # 全部画框

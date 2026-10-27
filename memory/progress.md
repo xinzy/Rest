@@ -1,6 +1,6 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0 原型已由用户确认；**S1 工程骨架进行中**。
+- 当前状态：设计已定稿（memory/plan.md）；S0、S1 已完成；**下一步 S2 计时状态机**。
 - 最后更新：2026-10-27
 
 ## S0 HTML 原型
@@ -11,9 +11,10 @@
 
 ## S1 工程骨架
 - [x] 征得用户同意后执行 `git init`，并添加 .gitignore（忽略 build/、xcuserdata/、.DS_Store，以及由 project.yml 生成的 XieHuiEr.xcodeproj/）
-- [ ] 编写 project.yml：App 目标（macOS 14、LSUIElement、显示名「歇会儿」、Bundle ID）和单元测试目标
-- [ ] StatusItemController：静态圆环图标、占位面板、退出功能
-- [ ] 构建、运行并截图验证
+- [x] 编写 project.yml：App 目标（macOS 14、LSUIElement、显示名「歇会儿」、Bundle ID，版本号取自 MARKETING_VERSION）和单元测试目标
+- [x] StatusItemController：静态圆环图标、占位面板（PanelWindow + PanelView）、退出功能；面板定位逻辑 PanelPlacement 有 3 个单元测试
+- [x] 构建、运行并截图验证：.agent/visual/S1-panel.md；用户在两块屏幕上手动验证通过（2026-10-27）
+- [x] 运行时发现并修复：退出前先收起面板，让 begin/endMenuTracking 成对；DEBUG 参数 `-openPanel` 改为延迟 1 秒打开（刚启动时图标还没排好）
 
 ## S2 计时状态机（纯逻辑和单元测试）
 - [ ] BreakSettings：默认值、取值范围校验、快速模式参数
