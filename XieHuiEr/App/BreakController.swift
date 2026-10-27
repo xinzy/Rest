@@ -49,6 +49,21 @@ final class BreakController {
         }
     }
 
+    /// 预告浮窗中的「推迟」
+    func postpone() {
+        update { scheduler, now in
+            scheduler.postpone(now: now)
+        }
+    }
+
+    /// 预告浮窗中的「立即开始」
+    func startNow() {
+        update { scheduler, now in
+            scheduler.startNow(now: now)
+            return []
+        }
+    }
+
     func pause(_ option: PauseOption) {
         update { scheduler, now in
             scheduler.pause(until: option.until(now: now, calendar: .current), now: now)

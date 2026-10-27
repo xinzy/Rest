@@ -10,6 +10,10 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     private let settingsWindow = PlaceholderWindowController(title: "设置", message: "设置开发中（S10）")
     private var eventMonitors: [Any] = []
     private var iconStyle: RingIconStyle?
+    /// 面板打开或收起后调用（预告浮窗据此让位）
+    var onPanelVisibilityChanged: (() -> Void)?
+
+    var isPanelVisible: Bool { panel.isVisible }
 
     init(controller: BreakController) {
         self.controller = controller
@@ -64,6 +68,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         panel.makeKeyAndOrderFront(nil)
         statusItem.button?.highlight(true)
         startEventMonitors()
+        onPanelVisibilityChanged?()
     }
 
     func closePanel() {
@@ -72,6 +77,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         panel.orderOut(nil)
         statusItem.button?.highlight(false)
         DistributedNotificationCenter.default().post(name: .endMenuTracking, object: nil)
+        onPanelVisibilityChanged?()
     }
 
     func windowDidResignKey(_ notification: Notification) {

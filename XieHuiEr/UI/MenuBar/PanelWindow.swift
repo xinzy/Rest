@@ -41,8 +41,8 @@ final class PanelWindow: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
-    /// 可拉伸的圆角蒙版，毛玻璃和窗口阴影都按它裁成圆角
-    private static func roundedMask(radius: CGFloat) -> NSImage {
+    /// 可拉伸的圆角蒙版，毛玻璃和窗口阴影都按它裁成圆角（预告浮窗也用它）
+    static func roundedMask(radius: CGFloat) -> NSImage {
         let edge = radius * 2 + 1
         let image = NSImage(size: NSSize(width: edge, height: edge), flipped: false) { rect in
             NSColor.black.setFill()

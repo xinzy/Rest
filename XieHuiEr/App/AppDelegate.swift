@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var breakController: BreakController?
     private var statusItemController: StatusItemController?
     private var overlayController: OverlayController?
+    private var warningHUDController: WarningHUDController?
 
     static func main() {
         let app = NSApplication.shared
@@ -23,8 +24,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let breakController = BreakController(settings: Self.initialSettings())
         let controller = StatusItemController(controller: breakController)
         let overlay = OverlayController(controller: breakController)
-        breakController.onChange = { [weak controller] in controller?.updateIcon() }
-        breakController.onBreakStarted = { [weak controller, weak overlay] active in
+        let hud = WarningHUDController(controller: breakController)
+        controller.onPanelVisibilityChanged = { [weak hud] in hud?.update() }
+        hud.isPanelVisible = { [weak controller] in controller?.isPanelVisible ?? false }
+        breakController.onChange = { [weak controller, weak hud] in
+            controller?.updateIcon()
+            hud?.update()
+        }
+        breakController.onBreakStarted = { [weak controller, weak overlay, weak hud] active in
+            hud?.hide()
             controller?.closePanel()
             overlay?.show(active)
         }
@@ -35,6 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.breakController = breakController
         statusItemController = controller
         overlayController = overlay
+        warningHUDController = hud
         #if DEBUG
         // 调试用：启动参数 -openPanel YES 让面板在启动后直接打开，不点击图标也能检查面板。
         // 刚启动时菜单栏图标还在排版（窗口先在屏幕外，再到屏幕边缘），等 1 秒位置稳定后再打开。
@@ -48,6 +57,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 调试用：启动参数 -renderOverlay <路径前缀> 把遮罩渲染成 PNG（没有屏幕录制权限时核对界面）。
         if let prefix = UserDefaults.standard.string(forKey: "renderOverlay") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { Self.renderOverlay(to: prefix) }
+        }
+        // 调试用：启动参数 -renderWarningHUD <路径前缀> 把预告浮窗渲染成 PNG。
+        if let prefix = UserDefaults.standard.string(forKey: "renderWarningHUD") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { Self.renderWarningHUD(to: prefix) }
         }
         #endif
     }
@@ -69,6 +82,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 OverlayView(controller: controller, model: model, actions: .init(skip: {}, drinkWater: {}))
             }
             .frame(width: 1440, height: 900)
+            let renderer = ImageRenderer(content: view)
+            renderer.scale = 2
+            guard let image = renderer.nsImage,
+                  let tiff = image.tiffRepresentation,
+                  let bitmap = NSBitmapImageRep(data: tiff),
+                  let png = bitmap.representation(using: .png, properties: [:]) else {
+                continue
+            }
+            try? png.write(to: URL(fileURLWithPath: "\(prefix)-\(name).png"))
+        }
+    }
+
+    /// 用 ImageRenderer 渲染预告浮窗的短休息和长休息两种样子（浅色实底代替窗口的毛玻璃背景）。
+    @MainActor
+    private static func renderWarningHUD(to prefix: String) {
+        let now = Date()
+        let settings = BreakSettings()
+        let previews: [(String, BreakKind, TimeInterval)] = [("short", .short, 28), ("long", .long, 26)]
+        for (name, kind, remaining) in previews {
+            let status = WarningHUDStatus(kind: kind, settings: settings, now: now, dueAt: now + remaining)
+            let view = ZStack(alignment: .topTrailing) {
+                Color(white: 0.93)
+                WarningHUDContent(status: status, actions: .init(postpone: {}, start: {}))
+                    .padding([.top, .trailing], 12)
+            }
+            .frame(width: 420, height: 200)
+            .environment(\.colorScheme, .light)
             let renderer = ImageRenderer(content: view)
             renderer.scale = 2
             guard let image = renderer.nsImage,

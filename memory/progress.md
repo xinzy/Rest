@@ -1,6 +1,6 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0–S4 已完成；**下一步 S5 预告浮窗**。
+- 当前状态：设计已定稿（memory/plan.md）；S0–S5 已完成；**下一步 S6 离开检测和会议推迟**。
 - 最后更新：2026-10-27
 
 ## S0 HTML 原型
@@ -37,8 +37,12 @@
 - [x] 验证：.agent/visual/S4-overlay.md（ImageRenderer 截图核对视觉；遮罩窗口双屏实测出现和消失）
 
 ## S5 预告浮窗
-- [ ] WarningHUD（不激活 App 的 NSPanel，显示在鼠标所在屏幕的右上角）、推迟、立即开始
-- [ ] 实测：在其他 App 中打字时不抢焦点
+- [x] WarningHUD（不激活 App 的 NSPanel，显示在鼠标所在屏幕的右上角）、推迟、立即开始
+- [x] WarningHUDStatus：标题「N 秒后开始短/长休息」、副标题、「推迟 X」、进度环比例，有单元测试
+- [x] 窗口不会成为 key window（`canBecomeKey = false`，显示时不调用 `makeKey`）；只在 `.warning` 期间显示，离开预告立即收起；菜单栏面板打开时让位
+- [x] 屏幕配置变化时重新定位；`-renderWarningHUD` 渲染截图
+- [x] 验证：69 个测试通过；截图和实测见 .agent/visual/S5-hud.md（快速模式下浮窗出现在主屏右上角，330×113，右边缘距屏幕 10pt、顶部在菜单栏下方 8pt）
+- [ ] 待用户手动确认：打字时不抢焦点、首次点击按钮即生效、推迟/立即开始、副屏定位、其他 App 全屏
 
 ## S6 离开检测和会议推迟
 - [ ] IdleMonitor：无操作时长和防息屏断言
