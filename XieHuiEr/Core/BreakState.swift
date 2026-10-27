@@ -49,6 +49,11 @@ enum BreakState: Equatable, Sendable {
     case deferred(UpcomingBreak, recheckAt: Date)
     case warning(UpcomingBreak)
     case working(UpcomingBreak)
+
+    var isOnBreak: Bool {
+        if case .onBreak = self { return true }
+        return false
+    }
 }
 
 /// 当前是否在工作时间内

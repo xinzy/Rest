@@ -12,6 +12,10 @@ final class BreakController {
 
     /// 每次刷新后调用，菜单栏图标据此重绘
     @ObservationIgnored var onChange: (() -> Void)?
+    /// 休息开始时调用（到点、预告中立即开始、面板立即休息）
+    @ObservationIgnored var onBreakStarted: ((ActiveBreak) -> Void)?
+    /// 休息结束（完成或跳过）时调用
+    @ObservationIgnored var onBreakEnded: ((BreakRecord) -> Void)?
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private let logger = Logger(subsystem: "com.shaozeng.xiehuier", category: "BreakController")
 
@@ -39,6 +43,12 @@ final class BreakController {
         }
     }
 
+    func skipBreak() {
+        update { scheduler, now in
+            scheduler.skip(now: now)
+        }
+    }
+
     func pause(_ option: PauseOption) {
         update { scheduler, now in
             scheduler.pause(until: option.until(now: now, calendar: .current), now: now)
@@ -60,10 +70,17 @@ final class BreakController {
 
     private func update(_ change: (inout BreakScheduler, Date) -> [BreakRecord]) {
         now = Date()
+        let wasOnBreak = scheduler.state.isOnBreak
         let records = change(&scheduler, now)
         // 记录在 S8 写入数据库，目前只写日志
         for record in records {
             logger.info("休息记录：\(String(describing: record.kind), privacy: .public) \(String(describing: record.outcome), privacy: .public) \(String(describing: record.trigger), privacy: .public)")
+        }
+        if case .onBreak(let active) = scheduler.state, !wasOnBreak {
+            onBreakStarted?(active)
+        }
+        for record in records where record.outcome == .completed || record.outcome == .skipped {
+            onBreakEnded?(record)
         }
         onChange?()
     }

@@ -15,7 +15,10 @@ for window in windows where window[kCGWindowOwnerPID as String] as? Int32 == pid
           let bounds = CGRect(dictionaryRepresentation: boundsDict) else { continue }
     let id = window[kCGWindowNumber as String] as? Int ?? -1
     let layer = window[kCGWindowLayer as String] as? Int ?? -1
-    print("window id=\(id) layer=\(layer) x=\(bounds.minX) y=\(bounds.minY) w=\(bounds.width) h=\(bounds.height)")
+    let alpha = window[kCGWindowAlpha as String] as? Double ?? -1
+    let sharing = window[kCGWindowSharingState as String] as? Int ?? -1
+    let memory = window[kCGWindowMemoryUsage as String] as? Int ?? -1
+    print("window id=\(id) layer=\(layer) alpha=\(alpha) sharing=\(sharing) memory=\(memory) x=\(bounds.minX) y=\(bounds.minY) w=\(bounds.width) h=\(bounds.height)")
 }
 
 var count: UInt32 = 0

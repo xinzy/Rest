@@ -1,6 +1,6 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0–S3 已完成；**下一步 S4 全屏遮罩**。
+- 当前状态：设计已定稿（memory/plan.md）；S0–S4 已完成；**下一步 S5 预告浮窗**。
 - 最后更新：2026-10-27
 
 ## S0 HTML 原型
@@ -28,11 +28,13 @@
 - [x] 验证：54 个测试通过；截图见 .agent/visual/S3-panel.md；用户手动验证通过（2026-10-27）
 
 ## S4 全屏遮罩
-- [ ] 休息开始时收起面板（StatusItemController.closePanel）
-- [ ] OverlayController：每块屏幕一个窗口，设置窗口层级和桌面空间行为，屏幕变化时重建窗口，保存并归还焦点，拦截键盘输入
-- [ ] OverlayView：休息类型、倒计时环、随机休息建议（Tips）、跳过按钮、喝水按钮（先用占位）
-- [ ] 休息结束提示音
-- [ ] 实测：其他 App 全屏时、接多块显示器时
+- [x] 休息开始时收起面板（BreakController 新增 onBreakStarted/onBreakEnded 回调，AppDelegate 里先 closePanel 再显示遮罩）
+- [x] OverlayController：每块屏幕一个 `.borderless + .nonactivatingPanel` 窗口（level `.screenSaver`、加入所有 Space 和全屏 App、跨屏常驻），屏幕配置变化时重建窗口，显示前记录前台 App、隐藏后用 `activate(options: [])` 归还焦点，本地 keyDown/keyUp 监视器加窗口内重写拦截键盘（Esc 不跳过）
+- [x] OverlayView：休息类型胶囊、240pt 倒计时环（72pt 等宽数字）、随机休息建议（BreakTips，休息开始时选定）、跳过按钮、喝水按钮（可点击，本次休息只能记一次，S8 接数据）
+- [x] 休息结束提示音：系统 Glass，音量 0.6；仅自然完成时播放，跳过不播
+- [x] 设置：BreakSettings 新增 soundEnabled、tipsEnabled（默认开）
+- [x] 单元测试：OverlayStatus、BreakTips、OverlayModel（喝水只记一次）、BreakController 回调与 skipBreak，共 61 个测试通过
+- [x] 验证：.agent/visual/S4-overlay.md（ImageRenderer 截图核对视觉；遮罩窗口双屏实测出现和消失）
 
 ## S5 预告浮窗
 - [ ] WarningHUD（不激活 App 的 NSPanel，显示在鼠标所在屏幕的右上角）、推迟、立即开始

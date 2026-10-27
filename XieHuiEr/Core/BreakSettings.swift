@@ -14,6 +14,10 @@ struct BreakSettings: Equatable, Sendable {
     /// 键鼠无操作多久算离开
     var awayThreshold: TimeInterval = 5 * 60
     var meetingDeferEnabled = true
+    /// 休息结束时的提示音
+    var soundEnabled = true
+    /// 遮罩上显示休息建议
+    var tipsEnabled = true
     /// 开会推迟后多久复查一次，不在设置界面中提供
     var meetingRecheckInterval: TimeInterval = 60
 
