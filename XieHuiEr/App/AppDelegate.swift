@@ -32,6 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         breakController.isInMeeting = { [weak meeting] in meeting?.isInMeeting ?? false }
         // 离开检测：无操作、锁屏、睡眠
         let presence = PresenceMonitor(controller: breakController)
+        // 工作时间：按设置判断，跟主循环每秒一起检查
+        breakController.currentWorkTime = { [weak breakController] now in
+            guard let breakController else { return .on }
+            return breakController.scheduler.settings.workHours.state(now: now, calendar: .current)
+        }
         controller.onPanelVisibilityChanged = { [weak hud] in hud?.update() }
         hud.isPanelVisible = { [weak controller] in controller?.isPanelVisible ?? false }
         breakController.onChange = { [weak controller, weak hud] in
@@ -72,6 +77,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let prefix = UserDefaults.standard.string(forKey: "renderWarningHUD") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { Self.renderWarningHUD(to: prefix) }
         }
+        // 调试用：启动参数 -offHours YES 把状态固定成非工作时间，方便查看面板的该状态。
+        if UserDefaults.standard.bool(forKey: "offHours") {
+            breakController.currentWorkTime = { now in
+                .off(nextStart: WorkHours().nextStart(now: now, calendar: .current))
+            }
+        }
+        // 调试用：启动参数 -renderPanel <路径前缀> 把面板渲染成 PNG。
+        if let prefix = UserDefaults.standard.string(forKey: "renderPanel") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { Self.renderPanel(breakController, to: prefix) }
+        }
         #endif
     }
 
@@ -102,6 +117,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             try? png.write(to: URL(fileURLWithPath: "\(prefix)-\(name).png"))
         }
+    }
+
+    /// 用 ImageRenderer 渲染面板（浅色实底代替窗口的毛玻璃背景）。
+    @MainActor
+    private static func renderPanel(_ controller: BreakController, to prefix: String) {
+        let view = ZStack {
+            Color(white: 0.96)
+            PanelView(controller: controller, actions: .init(
+                breakNow: {}, pause: { _ in }, resume: {}, openReport: {}, openSettings: {}, quit: {}
+            ))
+            .padding(12)
+        }
+        .environment(\.colorScheme, .light)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        guard let image = renderer.nsImage,
+              let tiff = image.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiff),
+              let png = bitmap.representation(using: .png, properties: [:]) else { return }
+        try? png.write(to: URL(fileURLWithPath: "\(prefix).png"))
     }
 
     /// 用 ImageRenderer 渲染预告浮窗的短休息和长休息两种样子（浅色实底代替窗口的毛玻璃背景）。

@@ -20,6 +20,8 @@ struct BreakSettings: Equatable, Sendable {
     var tipsEnabled = true
     /// 开会推迟后多久复查一次，不在设置界面中提供
     var meetingRecheckInterval: TimeInterval = 60
+    /// 只在工作时间提醒；设置界面在 S10 实现
+    var workHours = WorkHours()
 
     func duration(of kind: BreakKind) -> TimeInterval {
         kind == .long ? longDuration : shortDuration
@@ -34,7 +36,9 @@ struct BreakSettings: Equatable, Sendable {
         warningLead: 5,
         postponeDuration: 20,
         awayThreshold: 20,
-        meetingRecheckInterval: 5
+        meetingRecheckInterval: 5,
+        // 快速模式始终视为在工作时间内（verify.md）
+        workHours: WorkHours(enabled: false)
     )
 
     /// 设置界面中可以输入数值的项

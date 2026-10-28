@@ -155,11 +155,24 @@ struct PanelStatusTests {
         #expect(s.symbol == "moon")
         #expect(s.tint == .muted)
         #expect(s.dots == nil)
+        #expect(s.roundsText == "工作时间：周一至周五 09:00–19:00")
         #expect(s.breakNowEnabled)
         #expect(s.secondTile == .pause(enabled: false, subtitle: "非工作时间不可用"))
 
         scheduler.workTimeChanged(.off(nextStart: nil), now: t0)
         #expect(status(scheduler).subtitle == "未设置工作日")
+    }
+
+    @Test func offHoursWithoutWorkdaysShowsPlaceholder() {
+        var settings = BreakSettings()
+        settings.workHours.days = []
+        var scheduler = BreakScheduler(settings: settings, now: t0)
+
+        scheduler.workTimeChanged(.off(nextStart: nil), now: t0)
+        let s = status(scheduler)
+
+        #expect(s.roundsText == "未设置工作日")
+        #expect(s.subtitle == "未设置工作日")
     }
 
     @Test func awayShowsSinceWhen() {

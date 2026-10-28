@@ -96,7 +96,9 @@ struct PanelStatus: Equatable {
             tint = .muted
             ringFraction = 0
             dots = nil
-            roundsText = "非工作时间不提醒休息"
+            roundsText = settings.workHours.days.isEmpty
+                ? settings.workHours.summary
+                : "工作时间：\(settings.workHours.summary)"
             secondTile = .pause(enabled: false, subtitle: "非工作时间不可用")
 
         case .away(let since):

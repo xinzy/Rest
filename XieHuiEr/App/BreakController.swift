@@ -18,6 +18,8 @@ final class BreakController {
     @ObservationIgnored var onBreakEnded: ((BreakRecord) -> Void)?
     /// 麦克风或摄像头是否正在使用，由 AppDelegate 接到 MeetingDetector
     @ObservationIgnored var isInMeeting: () -> Bool = { false }
+    /// 当前是否在工作时间内，由 AppDelegate 按设置计算；DEBUG 可替换
+    @ObservationIgnored var currentWorkTime: (Date) -> WorkTime = { _ in .on }
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private let logger = Logger(subsystem: "com.shaozeng.xiehuier", category: "BreakController")
 
@@ -98,7 +100,12 @@ final class BreakController {
 
     private func tick() {
         let isInMeeting = self.isInMeeting
-        update { $0.tick(now: $1, isInMeeting: isInMeeting) }
+        let currentWorkTime = self.currentWorkTime
+        update { scheduler, now in
+            // 工作时间离开后不再触发新的休息；进入工作时间时如果用户已离开，离开判定会继续挡住这一轮
+            scheduler.workTimeChanged(currentWorkTime(now), now: now)
+            return scheduler.tick(now: now, isInMeeting: isInMeeting)
+        }
     }
 
     private func update(_ change: (inout BreakScheduler, Date) -> [BreakRecord]) {
