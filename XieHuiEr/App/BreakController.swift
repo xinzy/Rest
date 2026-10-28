@@ -16,6 +16,8 @@ final class BreakController {
     @ObservationIgnored var onBreakStarted: ((ActiveBreak) -> Void)?
     /// 休息结束（完成或跳过）时调用
     @ObservationIgnored var onBreakEnded: ((BreakRecord) -> Void)?
+    /// 产生一条休息记录时调用（完成、跳过、推迟、自动推迟），由 AppDelegate 接到 DataStore
+    @ObservationIgnored var onBreakRecorded: ((BreakRecord) -> Void)?
     /// 麦克风或摄像头是否正在使用，由 AppDelegate 接到 MeetingDetector
     @ObservationIgnored var isInMeeting: () -> Bool = { false }
     /// 当前是否在工作时间内，由 AppDelegate 按设置计算；DEBUG 可替换
@@ -100,21 +102,24 @@ final class BreakController {
 
     private func tick() {
         let isInMeeting = self.isInMeeting
-        let currentWorkTime = self.currentWorkTime
-        update { scheduler, now in
+        let now = Date()
+        // 在工作时间判定里读调度器会和下面 update 的 inout 访问冲突，先取出来
+        let workTime = currentWorkTime(now)
+        update(at: now) { scheduler, now in
             // 工作时间离开后不再触发新的休息；进入工作时间时如果用户已离开，离开判定会继续挡住这一轮
-            scheduler.workTimeChanged(currentWorkTime(now), now: now)
+            scheduler.workTimeChanged(workTime, now: now)
             return scheduler.tick(now: now, isInMeeting: isInMeeting)
         }
     }
 
-    private func update(_ change: (inout BreakScheduler, Date) -> [BreakRecord]) {
-        now = Date()
+    private func update(at time: Date = Date(), _ change: (inout BreakScheduler, Date) -> [BreakRecord]) {
+        now = time
         let wasOnBreak = scheduler.state.isOnBreak
         let records = change(&scheduler, now)
-        // 记录在 S8 写入数据库，目前只写日志
+        // 记录写入数据库（S8）
         for record in records {
             logger.info("休息记录：\(String(describing: record.kind), privacy: .public) \(String(describing: record.outcome), privacy: .public) \(String(describing: record.trigger), privacy: .public)")
+            onBreakRecorded?(record)
         }
         if case .onBreak(let active) = scheduler.state, !wasOnBreak {
             onBreakStarted?(active)

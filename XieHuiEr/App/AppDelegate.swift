@@ -10,6 +10,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var warningHUDController: WarningHUDController?
     private var meetingDetector: MeetingDetector?
     private var presenceMonitor: PresenceMonitor?
+    private var dataStore: DataStore?
+    private var waterCenter: WaterCenter?
 
     static func main() {
         let app = NSApplication.shared
@@ -24,8 +26,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 运行单元测试时，App 只是测试的宿主，不创建菜单栏图标
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
         let breakController = BreakController(settings: Self.initialSettings())
-        let controller = StatusItemController(controller: breakController)
-        let overlay = OverlayController(controller: breakController)
+        // 喝水和休息记录存 SwiftData，仅保存在本机
+        let store = DataStore(container: DataStore.makeContainer())
+        let water = WaterCenter(store: store)
+        let controller = StatusItemController(controller: breakController, water: water)
+        let overlay = OverlayController(controller: breakController, water: water)
         let hud = WarningHUDController(controller: breakController)
         // 会议检测：到点时麦克风或摄像头被占用就推迟休息
         let meeting = MeetingDetector()
@@ -39,9 +44,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         controller.onPanelVisibilityChanged = { [weak hud] in hud?.update() }
         hud.isPanelVisible = { [weak controller] in controller?.isPanelVisible ?? false }
-        breakController.onChange = { [weak controller, weak hud] in
+        breakController.onChange = { [weak controller, weak hud, weak water] in
             controller?.updateIcon()
             hud?.update()
+            // 跨天后重新查库，算出新一天的杯数
+            water?.refreshIfNeeded(now: Date(), calendar: .current)
+        }
+        breakController.onBreakRecorded = { [weak store] record in
+            store?.addBreakEvent(record)
         }
         breakController.onBreakStarted = { [weak controller, weak overlay, weak hud] active in
             hud?.hide()
@@ -59,6 +69,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         warningHUDController = hud
         meetingDetector = meeting
         presenceMonitor = presence
+        dataStore = store
+        waterCenter = water
         #if DEBUG
         // 调试用：启动参数 -openPanel YES 让面板在启动后直接打开，不点击图标也能检查面板。
         // 刚启动时菜单栏图标还在排版（窗口先在屏幕外，再到屏幕边缘），等 1 秒位置稳定后再打开。
@@ -91,52 +103,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     #if DEBUG
-    /// 用 ImageRenderer 渲染短休息和长休息的遮罩（深色实底代替窗口的毛玻璃背景）。
+    /// 用 ImageRenderer 渲染遮罩：短休息（默认）、长休息（已记录喝水）、高亮三种样子
+    /// （深色实底代替窗口的毛玻璃背景）。
     @MainActor
     private static func renderOverlay(to prefix: String) {
         let now = Date()
         let controller = BreakController(settings: BreakSettings())
-        let breaks: [(String, ActiveBreak)] = [
-            ("short", ActiveBreak(kind: .short, trigger: .scheduled, startedAt: now - 6, endsAt: now + 24)),
-            ("long", ActiveBreak(kind: .long, trigger: .scheduled, startedAt: now - 48, endsAt: now + 252)),
+        let recent = previewWater(lastDrinkAgo: 80 * 60, count: 2)
+        let thirsty = previewWater(lastDrinkAgo: 2 * 60 * 60 + 10 * 60, count: 1)
+        let previews: [(String, ActiveBreak, WaterCenter, Bool)] = [
+            ("short", ActiveBreak(kind: .short, trigger: .scheduled, startedAt: now - 6, endsAt: now + 24), recent, false),
+            ("long", ActiveBreak(kind: .long, trigger: .scheduled, startedAt: now - 48, endsAt: now + 252), recent, true),
+            ("hot", ActiveBreak(kind: .short, trigger: .scheduled, startedAt: now - 6, endsAt: now + 24), thirsty, false),
         ]
-        for (name, active) in breaks {
+        for (name, active, water, recorded) in previews {
             let model = OverlayModel(active: active, tip: BreakTips.random(for: active.kind))
+            if recorded { model.recordWater() }
             let view = ZStack {
                 Color(white: 0.18)
-                OverlayView(controller: controller, model: model, actions: .init(skip: {}, drinkWater: {}))
+                OverlayView(controller: controller, model: model, water: water, actions: .init(skip: {}, drinkWater: {}))
             }
             .frame(width: 1440, height: 900)
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-            guard let image = renderer.nsImage,
-                  let tiff = image.tiffRepresentation,
-                  let bitmap = NSBitmapImageRep(data: tiff),
-                  let png = bitmap.representation(using: .png, properties: [:]) else {
-                continue
-            }
-            try? png.write(to: URL(fileURLWithPath: "\(prefix)-\(name).png"))
+            write(view, to: "\(prefix)-\(name).png")
         }
     }
 
-    /// 用 ImageRenderer 渲染面板（浅色实底代替窗口的毛玻璃背景）。
+    /// 用 ImageRenderer 渲染面板的三种喝水状态（浅色实底代替窗口的毛玻璃背景）。
     @MainActor
     private static func renderPanel(_ controller: BreakController, to prefix: String) {
-        let view = ZStack {
-            Color(white: 0.96)
-            PanelView(controller: controller, actions: .init(
-                breakNow: {}, pause: { _ in }, resume: {}, openReport: {}, openSettings: {}, quit: {}
-            ))
-            .padding(12)
+        let undoWater = previewWater(lastDrinkAgo: 80 * 60, count: 3)
+        undoWater.drink(now: Date(), calendar: .current)
+        let variants: [(String, WaterCenter)] = [
+            ("normal", previewWater(lastDrinkAgo: 80 * 60, count: 3)),
+            ("alert", previewWater(lastDrinkAgo: 2 * 60 * 60 + 10 * 60, count: 2)),
+            ("undo", undoWater),
+        ]
+        for (name, water) in variants {
+            let view = ZStack {
+                Color(white: 0.96)
+                PanelView(controller: controller, water: water, actions: .init(
+                    breakNow: {}, pause: { _ in }, resume: {}, drinkWater: {}, undoWater: {},
+                    openReport: {}, openSettings: {}, quit: {}
+                ))
+                .padding(12)
+            }
+            .environment(\.colorScheme, .light)
+            write(view, to: "\(prefix)-\(name).png")
         }
-        .environment(\.colorScheme, .light)
-        let renderer = ImageRenderer(content: view)
-        renderer.scale = 2
-        guard let image = renderer.nsImage,
-              let tiff = image.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiff),
-              let png = bitmap.representation(using: .png, properties: [:]) else { return }
-        try? png.write(to: URL(fileURLWithPath: "\(prefix).png"))
     }
 
     /// 用 ImageRenderer 渲染预告浮窗的短休息和长休息两种样子（浅色实底代替窗口的毛玻璃背景）。
@@ -154,16 +167,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             .frame(width: 420, height: 200)
             .environment(\.colorScheme, .light)
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-            guard let image = renderer.nsImage,
-                  let tiff = image.tiffRepresentation,
-                  let bitmap = NSBitmapImageRep(data: tiff),
-                  let png = bitmap.representation(using: .png, properties: [:]) else {
-                continue
-            }
-            try? png.write(to: URL(fileURLWithPath: "\(prefix)-\(name).png"))
+            write(view, to: "\(prefix)-\(name).png")
         }
+    }
+
+    /// 调试渲染用的内存库和喝水状态：最近一杯在 lastDrinkAgo 之前，更早的每 30 分钟一杯
+    @MainActor
+    private static func previewWater(lastDrinkAgo: TimeInterval, count: Int) -> WaterCenter {
+        let store = DataStore(container: DataStore.makeContainer(inMemory: true))
+        let now = Date()
+        for index in 0..<count {
+            store.addWater(at: now - lastDrinkAgo - Double(index) * 30 * 60)
+        }
+        return WaterCenter(store: store, now: now)
+    }
+
+    @MainActor
+    private static func write(_ view: some View, to path: String) {
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        guard let image = renderer.nsImage,
+              let tiff = image.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiff),
+              let png = bitmap.representation(using: .png, properties: [:]) else { return }
+        try? png.write(to: URL(fileURLWithPath: path))
     }
     #endif
 

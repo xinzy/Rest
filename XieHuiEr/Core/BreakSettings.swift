@@ -22,6 +22,8 @@ struct BreakSettings: Equatable, Sendable {
     var meetingRecheckInterval: TimeInterval = 60
     /// 只在工作时间提醒；设置界面在 S10 实现
     var workHours = WorkHours()
+    /// 每日喝水目标，0 表示不设目标；设置界面在 S10 实现
+    var waterGoal = 8
 
     func duration(of kind: BreakKind) -> TimeInterval {
         kind == .long ? longDuration : shortDuration

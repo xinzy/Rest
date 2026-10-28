@@ -4,8 +4,9 @@ import AppKit
 @MainActor
 final class StatusItemController: NSObject, NSWindowDelegate {
     private let controller: BreakController
+    private let water: WaterCenter
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    private lazy var panel = PanelWindow(rootView: PanelView(controller: controller, actions: panelActions))
+    private lazy var panel = PanelWindow(rootView: PanelView(controller: controller, water: water, actions: panelActions))
     private let reportWindow = PlaceholderWindowController(title: "报表", message: "报表开发中（S9）")
     private let settingsWindow = PlaceholderWindowController(title: "设置", message: "设置开发中（S10）")
     private var eventMonitors: [Any] = []
@@ -15,8 +16,9 @@ final class StatusItemController: NSObject, NSWindowDelegate {
 
     var isPanelVisible: Bool { panel.isVisible }
 
-    init(controller: BreakController) {
+    init(controller: BreakController, water: WaterCenter) {
         self.controller = controller
+        self.water = water
         super.init()
         guard let button = statusItem.button else {
             preconditionFailure("NSStatusItem 没有 button")
@@ -42,6 +44,8 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             breakNow: { [weak self] in self?.controller.breakNow() },
             pause: { [weak self] in self?.controller.pause($0) },
             resume: { [weak self] in self?.controller.resume() },
+            drinkWater: { [weak self] in self?.water.drink(now: Date(), calendar: .current) },
+            undoWater: { [weak self] in self?.water.undo(now: Date()) },
             openReport: { [weak self] in self?.open(self?.reportWindow) },
             openSettings: { [weak self] in self?.open(self?.settingsWindow) },
             quit: { [weak self] in self?.quit() }

@@ -1,0 +1,21 @@
+# S8 数据记录与喝水
+
+- Changed files：XieHuiEr/Data/WaterRecord.swift（新）、XieHuiEr/Data/BreakEvent.swift（新）、XieHuiEr/Data/DataStore.swift（新）、XieHuiEr/Data/WaterCenter.swift（新）、XieHuiEr/UI/Water/WaterStatus.swift（新）、XieHuiEr/Core/BreakSettings.swift、XieHuiEr/App/BreakController.swift、XieHuiEr/App/AppDelegate.swift、XieHuiEr/UI/MenuBar/PanelView.swift、XieHuiEr/UI/MenuBar/StatusItemController.swift、XieHuiEr/UI/Break/OverlayView.swift、XieHuiEr/UI/Break/OverlayController.swift、XieHuiErTests/DataStoreTests.swift（新）、XieHuiErTests/WaterStatusTests.swift（新）
+- Route or URL：菜单栏图标 → 面板；休息遮罩。调试参数 `-renderPanel <前缀>`、`-renderOverlay <前缀>` 渲染 PNG
+- Viewport：面板宽 320pt、遮罩 1440×900，渲染 2x，浅色（面板）/深色（遮罩）
+- Artifact filename：
+  - S8-panel-normal.png（距上次喝水 1 小时 19 分，3/8 杯，+1 杯）
+  - S8-panel-alert.png（距上次喝水 2 小时 9 分，高亮青色底和描边）
+  - S8-panel-undo.png（刚记录，右侧变「撤销」，第三行「✓ 已记录 · 5 秒内可撤销」）
+  - S8-overlay-short.png（默认态：青色喝水按钮 + 「距上次喝水 1 小时 19 分」）
+  - S8-overlay-long.png（已记录态：绿色「✓ 已记录 · 今日 2 杯」，隐藏提示行，按钮不可再点）
+  - S8-overlay-hot.png（高亮态：满 2 小时，按钮青色高亮 + 「距上次喝水 2 小时 9 分」）
+- Observed result：
+  - 面板喝水行位于两个操作块下方、菜单上方，样式与原型 02 的水行一致：水滴图标、杯数（数字加粗）、右上角胶囊按钮、4pt 进度条、第三行说明。
+  - 满 2 小时后整行变成青色底 + 青色描边，说明文字也变青色，与原型 03 ⑥ 前的 alert 态一致；当天没喝过时也按高亮处理，文案为「今天还没喝水」。
+  - 点「+1 杯」后进入 5 秒撤销窗口：按钮换成灰色「撤销」，第三行变绿色；5 秒后恢复「+1 杯」和距上次喝水文案。
+  - 遮罩上的喝水按钮三态与原型 06 一致；已记录后按钮变绿并禁用，提示行隐藏，本次休息内不会重复记录。
+  - 数据库路径改为 `~/Library/Application Support/XieHuiEr/Records.store`，避免与 SwiftData 默认的公共 `default.store` 冲突；用 `open` 启动后实测生成了 store/shm/wal 三个文件。
+  - 差异只有渲染用浅色/深色实底代替了窗口的毛玻璃；本机终端进程没有屏幕录制权限，截图由 ImageRenderer 生成。
+  - 顺带修复：`tick` 里 `currentWorkTime` 闭包读 `scheduler` 会与 `update(&scheduler)` 的 inout 访问冲突（运行时致命错误），改为先取出工作时间再进入 update。
+- 待用户手动确认：面板 +1 与 5 秒撤销、满 2 小时高亮、跨天杯数归零、休息遮罩点喝水只记一次；`BreakEvent` 已随完成/跳过/推迟/自动推迟入库（S9 报表读取）。

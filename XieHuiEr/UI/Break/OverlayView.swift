@@ -10,10 +10,19 @@ struct OverlayView: View {
 
     let controller: BreakController
     let model: OverlayModel
+    let water: WaterCenter
     let actions: Actions
 
     var body: some View {
         let status = OverlayStatus(active: model.active, tip: model.tip, now: controller.now)
+        let waterStatus = WaterStatus(
+            count: water.todayCount,
+            goal: controller.scheduler.settings.waterGoal,
+            lastDrinkAt: water.lastDrinkAt,
+            now: controller.now,
+            calendar: .current,
+            undoUntil: nil
+        )
         ZStack {
             Color.black.opacity(0.62)
             VStack(spacing: 0) {
@@ -28,8 +37,14 @@ struct OverlayView: View {
                         .frame(maxWidth: 640)
                         .padding(.top, 30)
                 }
-                WaterButton(recorded: model.waterRecorded, action: actions.drinkWater)
-                    .padding(.top, 54)
+                WaterButton(
+                    recorded: model.waterRecorded,
+                    thirsty: waterStatus.isThirsty,
+                    recordedText: waterStatus.overlayRecordedText,
+                    hint: waterStatus.hintText,
+                    action: actions.drinkWater
+                )
+                .padding(.top, 54)
             }
             .padding(.bottom, 30)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -112,34 +127,52 @@ private struct CountdownRing: View {
     }
 }
 
-/// 喝水按钮；点击后变成「✓ 已记录」的绿色状态（数据记录在 S8 接入）
+/// 喝水按钮（原型 06）：默认、距上次喝水满 2 小时高亮、本次休息已记录三种状态；
+/// 未记录时按钮下方显示「距上次喝水 X」。
 private struct WaterButton: View {
     let recorded: Bool
+    let thirsty: Bool
+    let recordedText: String
+    let hint: String
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                Image(systemName: "drop.fill")
-                    .font(.system(size: 19))
-                    .foregroundStyle(recorded ? Color.green : Color.cyan)
-                Text(recorded ? "✓ 已记录" : "喝了一杯水")
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(.white.opacity(recorded ? 0.92 : 1))
-            }
-            .padding(.horizontal, 24)
-            .frame(height: 46)
-            .background(
-                Capsule().fill(recorded ? Color.green.opacity(0.18) : Color.white.opacity(0.16))
-            )
-            .overlay(
-                Capsule().strokeBorder(
-                    recorded ? Color.green.opacity(0.55) : Color.white.opacity(0.3),
-                    lineWidth: 0.5
+        let highlighted = thirsty && !recorded
+        VStack(spacing: 10) {
+            Button(action: action) {
+                HStack(spacing: 8) {
+                    Image(systemName: recorded ? "checkmark" : "drop.fill")
+                        .font(.system(size: 19))
+                        .foregroundStyle(recorded ? Color.green : (highlighted ? .black.opacity(0.85) : Color.cyan))
+                    Text(recorded ? recordedText : "喝了一杯水")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(recorded ? Color.white.opacity(0.92) : (highlighted ? .black.opacity(0.85) : .white))
+                }
+                .padding(.horizontal, 24)
+                .frame(height: 46)
+                .background(Capsule().fill(background(highlighted: highlighted)))
+                .overlay(
+                    Capsule().strokeBorder(
+                        recorded ? Color.green.opacity(0.55) : (highlighted ? .clear : .white.opacity(0.3)),
+                        lineWidth: 0.5
+                    )
                 )
-            )
+                .shadow(color: highlighted ? Color.cyan.opacity(0.38) : .clear, radius: 16, y: 5)
+            }
+            .buttonStyle(OverlayButtonStyle())
+            .disabled(recorded)
+
+            if !recorded {
+                Text(hint)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.white.opacity(0.6))
+            }
         }
-        .buttonStyle(OverlayButtonStyle())
+    }
+
+    private func background(highlighted: Bool) -> Color {
+        if recorded { return Color.green.opacity(0.18) }
+        return highlighted ? Color.cyan : Color.white.opacity(0.16)
     }
 }
 

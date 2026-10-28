@@ -1,21 +1,32 @@
 import SwiftUI
 
-/// 面板内容（原型 02、03）：状态区、「立即休息」「暂停 ▾ / 恢复计时」、报表、设置、退出。喝水那一行在 S8 加入。
+/// 面板内容（原型 02、03）：状态区、「立即休息」「暂停 ▾ / 恢复计时」、喝水那一行、报表、设置、退出。
 struct PanelView: View {
     struct Actions {
         var breakNow: () -> Void
         var pause: (PauseOption) -> Void
         var resume: () -> Void
+        var drinkWater: () -> Void
+        var undoWater: () -> Void
         var openReport: () -> Void
         var openSettings: () -> Void
         var quit: () -> Void
     }
 
     let controller: BreakController
+    let water: WaterCenter
     let actions: Actions
 
     var body: some View {
         let status = PanelStatus(scheduler: controller.scheduler, now: controller.now)
+        let waterStatus = WaterStatus(
+            count: water.todayCount,
+            goal: controller.scheduler.settings.waterGoal,
+            lastDrinkAt: water.lastDrinkAt,
+            now: controller.now,
+            calendar: .current,
+            undoUntil: water.undoDeadline
+        )
         VStack(spacing: 10) {
             StatusSection(status: status)
             HStack(spacing: 10) {
@@ -24,6 +35,7 @@ struct PanelView: View {
                      action: status.breakNowEnabled ? actions.breakNow : nil)
                 secondTile(status.secondTile)
             }
+            WaterRow(status: waterStatus, drink: actions.drinkWater, undo: actions.undoWater)
 
             VStack(spacing: 0) {
                 MenuRow(symbol: "chart.bar.xaxis", title: "报表…", action: actions.openReport)
@@ -264,6 +276,115 @@ private struct Platter: ViewModifier {
                 .background(pressedTint, in: shape)
                 .background(.white.opacity(0.6), in: shape)
                 .shadow(color: .black.opacity(0.1), radius: 0.75, y: 0.5)
+        }
+    }
+}
+
+// MARK: - 喝水
+
+/// 喝水那一行（原型 02、03 ⑥）：今日杯数与目标、+1 杯或撤销、进度条、距上次喝水；
+/// 距上次喝水满 2 小时时整行高亮。
+private struct WaterRow: View {
+    let status: WaterStatus
+    let drink: () -> Void
+    let undo: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var isAlert: Bool {
+        status.isThirsty && !status.canUndo
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 7) {
+                Image(systemName: "drop.fill")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.cyan)
+                countText
+                Spacer(minLength: 0)
+                button
+            }
+            bar
+                .padding(.top, 9)
+                .padding(.bottom, 7)
+            Text(status.metaText)
+                .font(.system(size: 11.5))
+                .foregroundStyle(metaColor)
+        }
+        .padding(EdgeInsets(top: 11, leading: 12, bottom: 10, trailing: 12))
+        .modifier(WaterPlatter(alert: isAlert))
+    }
+
+    private var countText: Text {
+        let prefix = Text("今日 ").font(.system(size: 13))
+        let count = Text("\(status.count)").font(.system(size: 15, weight: .bold))
+        let suffix = Text(status.goal > 0 ? " / \(status.goal) 杯" : " 杯").font(.system(size: 13))
+        return prefix + count + suffix
+    }
+
+    private var bar: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.primary.opacity(0.1))
+                Capsule()
+                    .fill(Color.cyan)
+                    .frame(width: proxy.size.width * status.barFraction)
+            }
+        }
+        .frame(height: 4)
+    }
+
+    @ViewBuilder
+    private var button: some View {
+        if status.canUndo {
+            Button(action: undo) {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text("撤销")
+                        .font(.system(size: 12.5, weight: .medium))
+                }
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 11)
+                .frame(height: 24)
+                .background(Color.primary.opacity(0.1), in: Capsule())
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        } else {
+            Button(action: drink) {
+                Text("+1 杯")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(colorScheme == .dark ? Color(white: 0).opacity(0.85) : .white)
+                    .padding(.horizontal, 11)
+                    .frame(height: 24)
+                    .background(Color.cyan, in: Capsule())
+                    .shadow(color: Color.cyan.opacity(isAlert ? 0.35 : 0), radius: 3)
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var metaColor: Color {
+        if status.canUndo { return .green }
+        return isAlert ? .cyan : .secondary
+    }
+}
+
+/// 喝水行的底板；距上次喝水满 2 小时时换成青色底加描边（原型 .p-water.alert）
+private struct WaterPlatter: ViewModifier {
+    let alert: Bool
+
+    func body(content: Content) -> some View {
+        if alert {
+            let shape = RoundedRectangle(cornerRadius: 11)
+            content
+                .background(Color.cyan.opacity(0.16), in: shape)
+                .overlay { shape.strokeBorder(Color.cyan.opacity(0.55), lineWidth: 1) }
+        } else {
+            content.modifier(Platter())
         }
     }
 }

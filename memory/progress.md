@@ -1,6 +1,6 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0–S7 已完成（S6、S7 待手动确认）；**下一步 S8 数据记录**。
+- 当前状态：设计已定稿（memory/plan.md）；S0–S8 已完成（S6–S8 待手动确认）；**下一步 S9 报表**。
 - 最后更新：2026-10-28
 
 ## S0 HTML 原型
@@ -62,11 +62,13 @@
 - [ ] 待用户手动确认：非工作时间图标变灰、不出现预告浮窗；进入工作时间后从第一次键鼠操作开始新的一轮；设置界面在 S10 接入
 
 ## S8 数据记录
-- [ ] SwiftData：WaterRecord、BreakEvent、Store（按天汇总）
-- [ ] 面板喝水行：+1、5 秒内撤销、距上次喝水、满 2 小时高亮
-- [ ] 遮罩喝水按钮（每次休息只能点一次）
-- [ ] 调度器产生的事件写入 BreakEvent
-- [ ] 单元测试：按天汇总（使用内存数据库）
+- [x] SwiftData：WaterRecord、BreakEvent、DataStore（按天汇总，`waterCounts(lastDays:now:calendar:)`）；数据库放 `~/Library/Application Support/XieHuiEr/Records.store`，打不开时退回内存库
+- [x] 面板喝水行：+1、5 秒内撤销、距上次喝水、满 2 小时高亮（WaterCenter 管理撤销窗口，WaterStatus 负责文案和高亮）
+- [x] 遮罩喝水按钮（每次休息只能点一次；已记录后变绿禁用并隐藏「距上次喝水」）
+- [x] 调度器产生的事件写入 BreakEvent（完成、跳过、推迟、自动推迟）
+- [x] 单元测试：DataStore 7 个（本地 0 点分天、按天汇总、删除后上次喝水回退、枚举字符串、撤销窗口、跨天归零）+ WaterStatus 10 个；共 107 个测试通过
+- [x] 验证：.agent/visual/S8-water.md（`-renderPanel` / `-renderOverlay` 渲染六张图，与原型 02、03 ⑥、06 对比一致）；用 `open` 实测生成数据库文件
+- [ ] 待用户手动确认：面板 +1 与 5 秒撤销、满 2 小时高亮、跨天归零、遮罩喝水只记一次；设置界面在 S10 接入
 
 ## S9 报表
 - [ ] 报表窗口；喝水页（概览、柱状图和目标线、每日明细和删除）

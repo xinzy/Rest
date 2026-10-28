@@ -7,6 +7,7 @@ import SwiftUI
 @MainActor
 final class OverlayController {
     private let controller: BreakController
+    private let water: WaterCenter
     private var windows: [OverlayPanel] = []
     private var model: OverlayModel?
     private var previousApp: NSRunningApplication?
@@ -16,8 +17,9 @@ final class OverlayController {
     private var soundEnabled = true
     private let logger = Logger(subsystem: "com.shaozeng.xiehuier", category: "OverlayController")
 
-    init(controller: BreakController) {
+    init(controller: BreakController, water: WaterCenter) {
         self.controller = controller
+        self.water = water
         // 遮罩显示期间插拔屏幕或改分辨率时重建窗口
         NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
@@ -36,8 +38,8 @@ final class OverlayController {
             tip: settings.tipsEnabled ? BreakTips.random(for: active.kind) : nil
         )
         model.onWaterRecorded = { [weak self] in
-            // 数据记录在 S8 接入
-            self?.logger.info("记录一杯水")
+            guard let self else { return }
+            water.drink(now: Date(), calendar: .current)
         }
         self.model = model
         soundEnabled = settings.soundEnabled
@@ -131,7 +133,7 @@ final class OverlayController {
         glass.autoresizingMask = [.width, .height]
 
         let hosting = NSHostingView(
-            rootView: OverlayView(controller: controller, model: model, actions: actions)
+            rootView: OverlayView(controller: controller, model: model, water: water, actions: actions)
         )
         hosting.translatesAutoresizingMaskIntoConstraints = false
         glass.addSubview(hosting)
