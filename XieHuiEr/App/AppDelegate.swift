@@ -29,7 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 喝水和休息记录存 SwiftData，仅保存在本机
         let store = DataStore(container: DataStore.makeContainer())
         let water = WaterCenter(store: store)
-        let controller = StatusItemController(controller: breakController, water: water)
+        let controller = StatusItemController(controller: breakController, water: water, store: store)
         let overlay = OverlayController(controller: breakController, water: water)
         let hud = WarningHUDController(controller: breakController)
         // 会议检测：到点时麦克风或摄像头被占用就推迟休息
@@ -98,6 +98,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 调试用：启动参数 -renderPanel <路径前缀> 把面板渲染成 PNG。
         if let prefix = UserDefaults.standard.string(forKey: "renderPanel") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { Self.renderPanel(breakController, to: prefix) }
+        }
+        // 调试用：启动参数 -renderReport <路径前缀> 把报表的四个组合渲染成 PNG。
+        if let prefix = UserDefaults.standard.string(forKey: "renderReport") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { Self.renderReport(to: prefix) }
         }
         #endif
     }
@@ -169,6 +173,93 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .environment(\.colorScheme, .light)
             write(view, to: "\(prefix)-\(name).png")
         }
+    }
+
+    /// 用 ImageRenderer 渲染报表的四个组合（880×680 的窗口内容）；
+    /// 内存库里的近 7 天数据与原型 08、09 一致，往前补齐到 30 天。
+    @MainActor
+    private static func renderReport(to prefix: String) {
+        let model = ReportModel(store: makeSampleStore(), waterGoal: { 8 }, onRecordsChanged: {})
+        let variants: [(String, ReportModel.Tab, ReportModel.Span)] = [
+            ("water-7", .water, .week),
+            ("water-30", .water, .month),
+            ("break-7", .rest, .week),
+            ("break-30", .rest, .month),
+        ]
+        for (name, tab, span) in variants {
+            model.tab = tab
+            model.span = span
+            let view = ZStack(alignment: .topLeading) {
+                Color(white: 0.96)
+                ReportView(model: model)
+                    .frame(width: 880, height: 680)
+            }
+            .environment(\.colorScheme, .light)
+            write(view, to: "\(prefix)-\(name).png")
+        }
+    }
+
+    /// 报表截图用的内存库：近 7 天与原型一致，往前补齐到 30 天
+    @MainActor
+    private static func makeSampleStore() -> DataStore {
+        let store = DataStore(container: DataStore.makeContainer(inMemory: true))
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        // 从最早到最近，每天杯数；最后 7 天是原型的 [6, 8, 9, 5, 8, 4, 3]
+        let waterCounts = [
+            6, 7, 8, 6, 7, 5, 6, 8, 9, 5,
+            7, 6, 8, 5, 7, 9, 6, 8, 4, 6,
+            7, 8, 6,
+            6, 8, 9, 5, 8, 4, 3,
+        ]
+        for (index, count) in waterCounts.enumerated() {
+            let day = calendar.date(byAdding: .day, value: index - (waterCounts.count - 1), to: today) ?? today
+            for cup in 0..<count {
+                store.addWater(at: day.addingTimeInterval(8 * 3600 + Double(cup) * 32 * 60))
+            }
+        }
+
+        // 最后 7 天的（完成、跳过、推迟、开会自动推迟）与原型 09 的明细表一致
+        let recentBreaks = [
+            (12, 2, 3, 1), (14, 1, 2, 2), (11, 3, 4, 0), (0, 0, 0, 0),
+            (0, 0, 0, 0), (13, 1, 2, 3), (2, 0, 1, 0),
+        ]
+        let olderBreaks = [
+            (9, 1, 2, 0), (12, 2, 1, 1), (10, 0, 3, 0), (0, 0, 0, 0),
+            (0, 0, 0, 0), (11, 2, 2, 1), (13, 1, 2, 2),
+        ]
+        var breakData: [(Int, Int, Int, Int)] = []
+        for index in 0..<23 {
+            breakData.append(olderBreaks[index % olderBreaks.count])
+        }
+        breakData.append(contentsOf: recentBreaks)
+
+        for (index, data) in breakData.enumerated() {
+            let day = calendar.date(byAdding: .day, value: index - (breakData.count - 1), to: today) ?? today
+            let (completed, skipped, postponed, autoDeferred) = data
+            for item in 0..<completed {
+                store.addBreakEvent(BreakRecord(
+                    at: day.addingTimeInterval(9.5 * 3600 + Double(item) * 35 * 60),
+                    kind: item % 4 == 3 ? .long : .short, outcome: .completed, trigger: .scheduled))
+            }
+            for item in 0..<skipped {
+                store.addBreakEvent(BreakRecord(
+                    at: day.addingTimeInterval(10 * 3600 + Double(item) * 35 * 60),
+                    kind: .short, outcome: .skipped, trigger: .scheduled))
+            }
+            for item in 0..<postponed {
+                store.addBreakEvent(BreakRecord(
+                    at: day.addingTimeInterval(18 * 3600 + Double(item) * 10 * 60),
+                    kind: .short, outcome: .postponed, trigger: .scheduled))
+            }
+            for item in 0..<autoDeferred {
+                store.addBreakEvent(BreakRecord(
+                    at: day.addingTimeInterval(19 * 3600 + Double(item) * 5 * 60),
+                    kind: .short, outcome: .autoDeferred, trigger: .scheduled))
+            }
+        }
+        return store
     }
 
     /// 调试渲染用的内存库和喝水状态：最近一杯在 lastDrinkAgo 之前，更早的每 30 分钟一杯

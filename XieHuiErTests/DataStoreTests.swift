@@ -101,4 +101,31 @@ struct DataStoreTests {
         // 距上次喝水仍按昨天那杯算
         #expect(center.lastDrinkAt == date(10, 27, 23, 30))
     }
+
+    @Test func waterRecordsAreSortedAndLimitedToRange() {
+        store.addWater(at: date(10, 27, 15, 0))
+        store.addWater(at: date(10, 27, 9, 0))
+        store.addWater(at: date(10, 28, 8, 0))
+        store.addWater(at: date(10, 26, 23, 50))
+
+        let records = store.waterRecords(from: day(10, 27), to: day(10, 28))
+
+        #expect(records.map(\.drankAt) == [date(10, 27, 9, 0), date(10, 27, 15, 0)])
+    }
+
+    @Test func breakRecordsMapEnumNamesAndRange() {
+        store.addBreakEvent(BreakRecord(at: date(10, 27, 10), kind: .long, outcome: .completed, trigger: .scheduled))
+        store.addBreakEvent(BreakRecord(at: date(10, 27, 9), kind: .short, outcome: .skipped, trigger: .manual))
+        store.addBreakEvent(BreakRecord(at: date(10, 27, 11), kind: .short, outcome: .postponed, trigger: .scheduled))
+        store.addBreakEvent(BreakRecord(at: date(10, 27, 12), kind: .short, outcome: .autoDeferred, trigger: .scheduled))
+        store.addBreakEvent(BreakRecord(at: date(10, 25, 9), kind: .short, outcome: .completed, trigger: .scheduled))
+
+        let records = store.breakRecords(from: day(10, 27), to: day(10, 28))
+
+        #expect(records.count == 4)
+        #expect(records.map(\.at) == [date(10, 27, 9), date(10, 27, 10), date(10, 27, 11), date(10, 27, 12)])
+        #expect(records.map(\.outcome) == [.skipped, .completed, .postponed, .autoDeferred])
+        #expect(records[1].kind == .long)
+        #expect(records[0].trigger == .manual)
+    }
 }

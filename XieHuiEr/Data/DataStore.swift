@@ -92,6 +92,13 @@ final class DataStore {
         }
     }
 
+    /// [start, end) 内的喝水记录，从早到晚
+    func waterRecords(from start: Date, to end: Date) -> [WaterRecord] {
+        let predicate = #Predicate<WaterRecord> { $0.drankAt >= start && $0.drankAt < end }
+        let descriptor = FetchDescriptor(predicate: predicate, sortBy: [SortDescriptor(\.drankAt)])
+        return (try? context.fetch(descriptor)) ?? []
+    }
+
     // MARK: - 休息
 
     func addBreakEvent(_ record: BreakRecord) {
@@ -107,6 +114,19 @@ final class DataStore {
 
     func breakEvents() -> [BreakEvent] {
         (try? context.fetch(FetchDescriptor<BreakEvent>(sortBy: [SortDescriptor(\.at)]))) ?? []
+    }
+
+    /// [start, end) 内的休息记录，从早到晚；无法识别的旧值跳过
+    func breakRecords(from start: Date, to end: Date) -> [BreakRecord] {
+        let predicate = #Predicate<BreakEvent> { $0.at >= start && $0.at < end }
+        let descriptor = FetchDescriptor(predicate: predicate, sortBy: [SortDescriptor(\.at)])
+        let events = (try? context.fetch(descriptor)) ?? []
+        return events.compactMap { event in
+            guard let kind = BreakKind(storedName: event.kind),
+                  let outcome = BreakOutcome(storedName: event.type),
+                  let trigger = BreakTrigger(storedName: event.trigger) else { return nil }
+            return BreakRecord(at: event.at, kind: kind, outcome: outcome, trigger: trigger)
+        }
     }
 
     private func save() {

@@ -27,6 +27,15 @@ extension BreakKind {
         case .long: return "long"
         }
     }
+
+    /// 从数据库读回；无法识别的值返回 nil，报表查询时跳过
+    init?(storedName: String) {
+        switch storedName {
+        case "short": self = .short
+        case "long": self = .long
+        default: return nil
+        }
+    }
 }
 
 extension BreakOutcome {
@@ -38,6 +47,16 @@ extension BreakOutcome {
         case .autoDeferred: return "autoDeferred"
         }
     }
+
+    init?(storedName: String) {
+        switch storedName {
+        case "completed": self = .completed
+        case "skipped": self = .skipped
+        case "postponed": self = .postponed
+        case "autoDeferred": self = .autoDeferred
+        default: return nil
+        }
+    }
 }
 
 extension BreakTrigger {
@@ -45,6 +64,14 @@ extension BreakTrigger {
         switch self {
         case .scheduled: return "scheduled"
         case .manual: return "manual"
+        }
+    }
+
+    init?(storedName: String) {
+        switch storedName {
+        case "scheduled": self = .scheduled
+        case "manual": self = .manual
+        default: return nil
         }
     }
 }

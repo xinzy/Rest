@@ -5,9 +5,14 @@ import AppKit
 final class StatusItemController: NSObject, NSWindowDelegate {
     private let controller: BreakController
     private let water: WaterCenter
+    private let store: DataStore
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private lazy var panel = PanelWindow(rootView: PanelView(controller: controller, water: water, actions: panelActions))
-    private let reportWindow = PlaceholderWindowController(title: "报表", message: "报表开发中（S9）")
+    private lazy var reportWindow = ReportWindowController(
+        store: store,
+        waterGoal: { [weak self] in self?.controller.scheduler.settings.waterGoal ?? 0 },
+        onRecordsChanged: { [weak self] in self?.water.refresh(now: Date(), calendar: .current) }
+    )
     private let settingsWindow = PlaceholderWindowController(title: "设置", message: "设置开发中（S10）")
     private var eventMonitors: [Any] = []
     private var iconStyle: RingIconStyle?
@@ -16,9 +21,10 @@ final class StatusItemController: NSObject, NSWindowDelegate {
 
     var isPanelVisible: Bool { panel.isVisible }
 
-    init(controller: BreakController, water: WaterCenter) {
+    init(controller: BreakController, water: WaterCenter, store: DataStore) {
         self.controller = controller
         self.water = water
+        self.store = store
         super.init()
         guard let button = statusItem.button else {
             preconditionFailure("NSStatusItem 没有 button")
@@ -46,7 +52,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             resume: { [weak self] in self?.controller.resume() },
             drinkWater: { [weak self] in self?.water.drink(now: Date(), calendar: .current) },
             undoWater: { [weak self] in self?.water.undo(now: Date()) },
-            openReport: { [weak self] in self?.open(self?.reportWindow) },
+            openReport: { [weak self] in self?.showReport() },
             openSettings: { [weak self] in self?.open(self?.settingsWindow) },
             quit: { [weak self] in self?.quit() }
         )
@@ -55,6 +61,12 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     private func open(_ window: PlaceholderWindowController?) {
         closePanel()
         window?.show()
+    }
+
+    /// 报表是正式窗口（S9），打开前先收起面板
+    private func showReport() {
+        closePanel()
+        reportWindow.show()
     }
 
     func showPanel() {
