@@ -131,7 +131,11 @@ struct WaterReportView: View {
     private func xDomain(_ days: [WaterDayCount]) -> ClosedRange<Date> {
         let first = days.first?.day ?? model.today
         let last = days.last?.day ?? model.today
-        return first...last
+        // 柱子按天占满 [当天 0 点, 次日 0 点)，坐标轴要延到次日，否则今天的柱子会被裁掉；
+        // 30 天时再多留一天，避免最右边「10-28」的标签被绘图区边缘裁掉
+        let extraDays = model.span == .week ? 1 : 2
+        let end = calendar.date(byAdding: .day, value: extraDays, to: last) ?? last
+        return first...end
     }
 
     /// 近 7 天每个柱下都标「周几 / 月-日」，今天加粗；近 30 天每隔 5 天标一次

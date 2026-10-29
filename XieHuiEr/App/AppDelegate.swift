@@ -103,6 +103,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let prefix = UserDefaults.standard.string(forKey: "renderReport") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { Self.renderReport(to: prefix) }
         }
+        // 调试用：启动参数 -captureReport <路径前缀> 截取真实报表窗口（含滚动区和分段控件）。
+        if let prefix = UserDefaults.standard.string(forKey: "captureReport") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { controller.captureReport(to: prefix) }
+        }
         #endif
     }
 
@@ -189,10 +193,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         for (name, tab, span) in variants {
             model.tab = tab
             model.span = span
+            model.reload()
+            // ImageRenderer 渲染不了 ScrollView 和分段控件，这里直接渲染页面内容
             let view = ZStack(alignment: .topLeading) {
                 Color(white: 0.96)
-                ReportView(model: model)
-                    .frame(width: 880, height: 680)
+                Group {
+                    switch tab {
+                    case .water: WaterReportView(model: model)
+                    case .rest: BreakReportView(model: model)
+                    }
+                }
+                .padding(20)
+                .frame(width: 880, alignment: .leading)
             }
             .environment(\.colorScheme, .light)
             write(view, to: "\(prefix)-\(name).png")

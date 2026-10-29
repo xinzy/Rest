@@ -69,6 +69,14 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         reportWindow.show()
     }
 
+    #if DEBUG
+    /// 调试用：打开报表并截取真实窗口（排查 ImageRenderer 与真实界面不一致的问题）
+    func captureReport(to prefix: String) {
+        closePanel()
+        reportWindow.captureVariants(to: prefix)
+    }
+    #endif
+
     func showPanel() {
         guard let itemWindow = statusItem.button?.window, let screen = itemWindow.screen ?? NSScreen.main else {
             preconditionFailure("找不到菜单栏图标所在的屏幕")
