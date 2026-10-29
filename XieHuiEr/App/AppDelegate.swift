@@ -25,11 +25,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // 运行单元测试时，App 只是测试的宿主，不创建菜单栏图标
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
-        let breakController = BreakController(settings: Self.initialSettings())
+        let settingsStore = SettingsStore()
+        let breakController = BreakController(settings: Self.initialSettings(store: settingsStore))
         // 喝水和休息记录存 SwiftData，仅保存在本机
         let store = DataStore(container: DataStore.makeContainer())
         let water = WaterCenter(store: store)
-        let controller = StatusItemController(controller: breakController, water: water, store: store)
+        let controller = StatusItemController(
+            controller: breakController, water: water, store: store, settingsStore: settingsStore
+        )
+        // 登录项默认开启：第一次启动时注册一次，失败就保持关闭（见 LoginItem）
+        LoginItem().enableByDefaultIfNeeded()
         let overlay = OverlayController(controller: breakController, water: water)
         let hud = WarningHUDController(controller: breakController)
         // 会议检测：到点时麦克风或摄像头被占用就推迟休息
@@ -106,6 +111,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 调试用：启动参数 -captureReport <路径前缀> 截取真实报表窗口（含滚动区和分段控件）。
         if let prefix = UserDefaults.standard.string(forKey: "captureReport") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { controller.captureReport(to: prefix) }
+        }
+        // 调试用：启动参数 -renderSettings <路径前缀> 打开设置窗口并截取三个标签页。
+        if let prefix = UserDefaults.standard.string(forKey: "renderSettings") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { controller.captureSettings(to: prefix) }
         }
         #endif
     }
@@ -297,12 +306,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     #endif
 
-    /// 设置的持久化在 S10 实现，目前用默认值
-    private static func initialSettings() -> BreakSettings {
+    /// 设置从 UserDefaults 读取（S10）；DEBUG 的快速模式仍优先
+    private static func initialSettings(store: SettingsStore) -> BreakSettings {
         #if DEBUG
         // 调试用：启动参数 -fastMode YES 把所有时长换成秒级（见 verify.md）
         if UserDefaults.standard.bool(forKey: "fastMode") { return .fastMode }
         #endif
-        return BreakSettings()
+        return store.load()
     }
 }

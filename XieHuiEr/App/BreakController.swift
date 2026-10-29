@@ -84,6 +84,14 @@ final class BreakController {
         }
     }
 
+    /// 设置窗口修改后立即生效：休息中会等这次休息结束，其他状态当前这一轮从头计时
+    func apply(settings newSettings: BreakSettings) {
+        update { scheduler, now in
+            scheduler.updateSettings(newSettings, now: now)
+            return []
+        }
+    }
+
     /// 判定用户已离开。since 是最后一次输入、锁屏或睡眠的时间
     func userAway(since: Date) {
         update { scheduler, now in

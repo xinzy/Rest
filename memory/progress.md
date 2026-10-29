@@ -1,7 +1,7 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0–S9 已完成（S6–S9 待手动确认）；**下一步 S10 设置和开机自启**。
-- 最后更新：2026-10-28
+- 当前状态：设计已定稿（memory/plan.md）；S0–S10 已完成（S6–S10 待手动确认）；**下一步 S11 打包与验收**。
+- 最后更新：2026-10-29
 
 ## S0 HTML 原型
 - [x] 写设计文档（memory/）
@@ -84,8 +84,15 @@
 - [ ] 待用户手动确认：窗口里切换分段与日期、点选柱状图、悬停删除记录并重算、30 天滚动
 
 ## S10 设置和开机自启
-- [ ] 设置窗口的三个标签页、取值范围校验、修改后立即生效
-- [ ] SMAppService 登录项（实测 ad-hoc 签名下是否可用）
+- [x] SettingsStore：整个 `BreakSettings` 编码成一个 JSON 存 UserDefaults 的 `breakSettings` 键；解码时逐字段 `decodeIfPresent`，缺字段/坏数据都回默认值（不认识的键忽略）
+- [x] LoginItem：`SMAppService.mainApp` 注册/注销、`requiresApproval` 状态；首次启动默认注册（`loginItemConfigured` 只试一次），失败只记日志
+- [x] SettingsModel：数值在失焦/回车时校验（5–120 分钟等 §4.3 范围），不合法只标红不保存；开关、工作日、时间段改动即时保存；工作时间校验开始早于结束；预告不短于推迟时标在预告上；登录项失败给黄色提示条文案
+- [x] SettingsWindowController + SettingsView：520×620 固定窗口、原生 `TabView` 三页（通用 / 休息 / 喝水）、分组表单与脚注、长休息关闭时子项变灰、⌘, 打开且只创建一次
+- [x] 接线：`BreakController.apply(settings:)`（休息中等这次结束、其他状态这一轮从头计时）；StatusItemController 用真实设置窗口替换占位窗口；AppDelegate 启动时从 SettingsStore 读设置并默认注册登录项
+- [x] DEBUG `-renderSettings <前缀>`：打开真实窗口用 `cacheDisplay` 逐标签页截图（连标题栏，标签栏在标题栏区域）
+- [x] 单元测试：SettingsStore 5 个（往返、缺键、坏数据、部分字段、未知字段）+ SettingsModel 8 个（合法即时生效、超范围保留旧值、非数字、预告与推迟关系、喝水目标边界、工作时间先后、工作日切换）；共 136 个测试通过
+- [x] 验证：.agent/visual/S10-settings.md（与原型 07 对比）；深色外观、报错状态、原生标签栏位置均已记录
+- [ ] 待用户手动确认：面板「设置… ⌘,」、改数值的生效时机、长休息关闭时子项灰显、登录项在 ad-hoc 签名下是否可用、失败时黄色提示条
 - [ ] 端到端验收（verify.md 中的场景清单）
 
 ## 延后 / 待议

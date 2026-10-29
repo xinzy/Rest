@@ -6,6 +6,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
     private let controller: BreakController
     private let water: WaterCenter
     private let store: DataStore
+    private let settingsStore: SettingsStore
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     private lazy var panel = PanelWindow(rootView: PanelView(controller: controller, water: water, actions: panelActions))
     private lazy var reportWindow = ReportWindowController(
@@ -13,7 +14,12 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         waterGoal: { [weak self] in self?.controller.scheduler.settings.waterGoal ?? 0 },
         onRecordsChanged: { [weak self] in self?.water.refresh(now: Date(), calendar: .current) }
     )
-    private let settingsWindow = PlaceholderWindowController(title: "设置", message: "设置开发中（S10）")
+    private lazy var settingsWindow = SettingsWindowController(
+        settings: controller.scheduler.settings,
+        store: settingsStore,
+        loginItem: LoginItem(),
+        onApply: { [weak self] in self?.controller.apply(settings: $0) }
+    )
     private var eventMonitors: [Any] = []
     private var iconStyle: RingIconStyle?
     /// 面板打开或收起后调用（预告浮窗据此让位）
@@ -21,10 +27,11 @@ final class StatusItemController: NSObject, NSWindowDelegate {
 
     var isPanelVisible: Bool { panel.isVisible }
 
-    init(controller: BreakController, water: WaterCenter, store: DataStore) {
+    init(controller: BreakController, water: WaterCenter, store: DataStore, settingsStore: SettingsStore) {
         self.controller = controller
         self.water = water
         self.store = store
+        self.settingsStore = settingsStore
         super.init()
         guard let button = statusItem.button else {
             preconditionFailure("NSStatusItem 没有 button")
@@ -53,14 +60,9 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             drinkWater: { [weak self] in self?.water.drink(now: Date(), calendar: .current) },
             undoWater: { [weak self] in self?.water.undo(now: Date()) },
             openReport: { [weak self] in self?.showReport() },
-            openSettings: { [weak self] in self?.open(self?.settingsWindow) },
+            openSettings: { [weak self] in self?.showSettings() },
             quit: { [weak self] in self?.quit() }
         )
-    }
-
-    private func open(_ window: PlaceholderWindowController?) {
-        closePanel()
-        window?.show()
     }
 
     /// 报表是正式窗口（S9），打开前先收起面板
@@ -69,11 +71,23 @@ final class StatusItemController: NSObject, NSWindowDelegate {
         reportWindow.show()
     }
 
+    /// 设置是正式窗口（S10），打开前先收起面板
+    private func showSettings() {
+        closePanel()
+        settingsWindow.show()
+    }
+
     #if DEBUG
     /// 调试用：打开报表并截取真实窗口（排查 ImageRenderer 与真实界面不一致的问题）
     func captureReport(to prefix: String) {
         closePanel()
         reportWindow.captureVariants(to: prefix)
+    }
+
+    /// 调试用：打开设置并截取三个标签页
+    func captureSettings(to prefix: String) {
+        closePanel()
+        settingsWindow.captureVariants(to: prefix)
     }
     #endif
 
@@ -147,7 +161,7 @@ final class StatusItemController: NSObject, NSWindowDelegate {
             return true
         }
         if modifiers == .command, event.charactersIgnoringModifiers == "," {
-            open(settingsWindow)
+            showSettings()
             return true
         }
         return false
