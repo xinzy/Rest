@@ -34,6 +34,11 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shaozeng.xiehuier
+        # 应用在 Finder 里显示为「歇会儿.app」；可执行文件和 Swift 模块仍用 ASCII 名
+        PRODUCT_NAME: 歇会儿
+        EXECUTABLE_NAME: XieHuiEr
+        PRODUCT_MODULE_NAME: XieHuiEr
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
   XieHuiErTests:
     type: bundle.unit-test
@@ -46,6 +51,9 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shaozeng.xiehuier.tests
         GENERATE_INFOPLIST_FILE: YES
+        # 产品名是「歇会儿.app」，xcodegen 按目标名生成的 TEST_HOST 指不到它
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/歇会儿.app/Contents/MacOS/XieHuiEr
+        BUNDLE_LOADER: $(TEST_HOST)
 
 schemes:
   XieHuiEr:

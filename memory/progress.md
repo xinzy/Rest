@@ -95,5 +95,12 @@
 - [ ] 待用户手动确认：面板「设置… ⌘,」、改数值的生效时机、长休息关闭时子项灰显、登录项在 ad-hoc 签名下是否可用、失败时黄色提示条
 - [ ] 端到端验收（verify.md 中的场景清单）
 
+## S11 打包和验收
+- [x] 产品名改成「歇会儿」：`PRODUCT_NAME: 歇会儿`、`EXECUTABLE_NAME`/`PRODUCT_MODULE_NAME` 仍为 `XieHuiEr`（Finder 里是 `歇会儿.app`，可执行文件与 Swift 模块保持 ASCII）；测试目标的 `TEST_HOST`/`BUNDLE_LOADER` 必须显式指向 `歇会儿.app`
+- [x] 应用图标：`XieHuiEr/Resources/Assets.xcassets/AppIcon.appiconset`（圆角渐变方块 + 白色圆环 + 暂停符号，16–1024 共 10 个尺寸），`ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon`
+- [x] Release 构建：`xcodebuild -configuration Release -derivedDataPath build`，产物 `build/Build/Products/Release/歇会儿.app`（universal、ad-hoc 签名）
+- [x] 安装到 `/Applications/歇会儿.app` 并启动验证；136 个测试通过
+- [ ] 待用户手动确认：Finder / 登录项里的名称与图标、首次打开的系统放行
+
 ## 延后 / 待议
 - S2 审查指出、尚未单独测试的子情形（逻辑由统一的条件判定覆盖，风险低）：预告/离开中点「立即休息」；会议推迟或离开中离开工作时间；预告、会议推迟、暂停、非工作时间、离开中修改设置；休息中调小长休息频率时先按旧设置计轮再截断。S10 前视情况补测
