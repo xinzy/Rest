@@ -5,5 +5,8 @@
 build/
 xcuserdata/
 
+# 打包产物（zip / dmg）
+dist/
+
 # 由 project.yml 生成（xcodegen generate），不纳入版本管理
 XieHuiEr.xcodeproj/
