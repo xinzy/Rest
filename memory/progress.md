@@ -1,6 +1,6 @@
 # 进度
 
-- 当前状态：设计已定稿（memory/plan.md）；S0–S10 已完成（S6–S10 待手动确认）；**下一步 S11 打包与验收**。
+- 当前状态：设计已定稿（memory/plan.md）；S0–S11 已完成（S6–S7、S9–S10 部分交互仍待手动确认）；0.1.1 修复报表 X 轴标签对齐，0.1.2 增加 Esc 跳过休息，均已打包 Release。
 - 最后更新：2026-10-29
 
 ## S0 HTML 原型
@@ -100,6 +100,8 @@
 - [x] 应用图标：`XieHuiEr/Resources/Assets.xcassets/AppIcon.appiconset`（圆角渐变方块 + 白色圆环 + 暂停符号，16–1024 共 10 个尺寸），`ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon`
 - [x] Release 构建：`xcodebuild -configuration Release -derivedDataPath build`，产物 `build/Build/Products/Release/歇会儿.app`（universal、ad-hoc 签名）
 - [x] 安装到 `/Applications/歇会儿.app` 并启动验证；136 个测试通过
+- [x] 0.1.1：报表 X 轴刻度取当天正午 + `AxisValueLabel(anchor: .top)`，标签与柱子居中对齐；打包 `dist/歇会儿-0.1.1.zip`
+- [x] 0.1.2：遮罩期间按 Esc 等同于「跳过休息」（`OverlayController.installKeyMonitor` 里判断 keyCode 53）；打包 `dist/歇会儿-0.1.2.zip`
 - [ ] 待用户手动确认：Finder / 登录项里的名称与图标、首次打开的系统放行
 
 ## 延后 / 待议

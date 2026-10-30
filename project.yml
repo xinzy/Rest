@@ -10,8 +10,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.1"
-    CURRENT_PROJECT_VERSION: "2"
+    MARKETING_VERSION: "0.1.2"
+    CURRENT_PROJECT_VERSION: "3"
     # 仅自用：ad-hoc 签名，不需要开发者账号
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual

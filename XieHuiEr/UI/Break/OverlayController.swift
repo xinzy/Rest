@@ -3,7 +3,7 @@ import os
 import SwiftUI
 
 /// 全屏遮罩（plan.md §4.2）：每块屏幕一个无边框窗口，覆盖所有桌面和全屏 App。
-/// 显示期间拦截键盘输入；结束后淡出并把焦点还给休息前的 App。
+/// 显示期间拦截键盘输入，但允许按 Esc 跳过这次休息；结束后淡出并把焦点还给休息前的 App。
 @MainActor
 final class OverlayController {
     private let controller: BreakController
@@ -168,7 +168,13 @@ final class OverlayController {
 
     private func installKeyMonitor() {
         guard keyMonitor == nil else { return }
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { _ in nil }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] event in
+            // Esc 等同于「跳过休息」；其余按键一律吞掉，避免误触原 App
+            if event.type == .keyDown, event.keyCode == 53 {
+                self?.controller.skipBreak()
+            }
+            return nil
+        }
     }
 
     private func removeKeyMonitor() {
@@ -191,7 +197,7 @@ final class OverlayController {
     }
 }
 
-/// 遮罩窗口：可以成为 key window 以接收键盘，但不会激活 App；Esc 也不做任何事。
+/// 遮罩窗口：可以成为 key window 以接收键盘，但不会激活 App；Esc 由 OverlayController 的按键监听处理。
 private final class OverlayPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
