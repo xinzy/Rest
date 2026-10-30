@@ -138,20 +138,27 @@ struct WaterReportView: View {
         return first...end
     }
 
+    private func noon(_ day: Date) -> Date? {
+        calendar.date(byAdding: .hour, value: 12, to: day)
+    }
+
     /// 近 7 天每个柱下都标「周几 / 月-日」，今天加粗；近 30 天每隔 5 天标一次
+    /// 刻度取当天 12 点，与居中柱子的中心对齐
     private func xAxisMarks(_ report: WaterReport) -> some AxisContent {
         let days = report.days.map(\.day)
-        let values: [Date]
+        let ticks: [Date]
         if model.span == .week {
-            values = days
+            ticks = days.compactMap(noon)
         } else {
-            values = days.enumerated().compactMap { index, day in
-                (days.count - 1 - index) % 5 == 0 ? day : nil
+            ticks = days.enumerated().compactMap { index, day in
+                (days.count - 1 - index) % 5 == 0 ? noon(day) : nil
             }
         }
-        return AxisMarks(values: values) { value in
-            AxisValueLabel {
-                if let day = value.as(Date.self) {
+        return AxisMarks(values: ticks) { value in
+            // anchor .top：让刻度点落在标签顶边中点，标签才对得正柱子；默认是从左边开始排
+            AxisValueLabel(anchor: .top) {
+                if let tick = value.as(Date.self) {
+                    let day = calendar.startOfDay(for: tick)
                     VStack(spacing: 1) {
                         Text(ReportStats.weekdayText(day, calendar: calendar))
                             .font(.system(size: 10.5))
