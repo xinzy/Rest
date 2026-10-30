@@ -108,7 +108,28 @@ private struct GeneralSettingsPage: View {
                 .padding(10)
                 .background(Color.yellow.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
             }
+
+            SettingsSection(title: "关于") {
+                SettingsRow(title: "版本", first: true) {
+                    Text(AppVersion.text)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
+    }
+}
+
+/// 关于一栏显示的版本信息，例如「0.1.2（构建 3）」
+enum AppVersion {
+    static var text: String {
+        let version = info("CFBundleShortVersionString")
+        let build = info("CFBundleVersion")
+        return "\(version)（构建 \(build)）"
+    }
+
+    private static func info(_ key: String) -> String {
+        Bundle.main.object(forInfoDictionaryKey: key) as? String ?? "—"
     }
 }
 
